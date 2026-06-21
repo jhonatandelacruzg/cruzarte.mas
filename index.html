@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="dark" lang="es" style=""><head>
+<!DOCTYPE html><html class="dark" lang="es"><head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>CRUZARTE+</title>
@@ -128,6 +128,7 @@
                 color: #fff;
                 font-size: 12px;
                 font-weight: 600;
+                appearance: textfield;
                 -moz-appearance: textfield;
             }
             .cart-float-qty-input::-webkit-outer-spin-button,
@@ -1238,8 +1239,9 @@
     <button data-cat="todos" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Todos</button>
     <button data-cat="pisco" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Piscos</button>
     <button data-cat="vino" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Vinos</button>
+    <button data-cat="licor" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Licores</button>
     <button data-cat="Ron" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Ron</button>
-    <button data-cat="Wisky" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Wisky</button>
+    <button data-cat="Wisky" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Whisky</button>
 
     </div>
     
@@ -1300,9 +1302,9 @@
     <div>
     <h5 class="font-label-sm text-white uppercase mb-6">Tienda</h5>
     <ul class="space-y-4 text-on-surface text-sm">
-    <li class=""><a class="hover:text-primary transition-colors" href="#" onclick="abrirCatalogo(event)">Todos los Piscos</a></li>
-    <li class=""><a class="hover:text-primary transition-colors" href="#" onclick="abrirCatalogo(event)">Vinos de Altura</a></li>
-    <li class=""><a class="hover:text-primary transition-colors" href="#" onclick="abrirCatalogo(event)">Licores Especiales</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#" onclick="abrirCatalogo(event, 'pisco')">Todos los Piscos</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#" onclick="abrirCatalogo(event, 'vino')">Vinos de Altura</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#" onclick="abrirCatalogo(event, 'licor')">Licores Especiales</a></li>
     <li class=""><a class="hover:text-primary transition-colors" href="#" onclick="abrirCatalogo(event)">Ofertas</a></li>
     </ul>
     </div>
@@ -1343,10 +1345,13 @@
             }
         })();
     
-        // Smooth scroll and active states
+        // Smooth scroll and active states (no interceptar enlaces con onclick propio)
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
-                const target = document.querySelector(this.getAttribute('href'));
+                if (this.getAttribute('onclick')) return;
+                const href = this.getAttribute('href');
+                if (!href || href === '#') return;
+                const target = document.querySelector(href);
                 if (target) {
                     e.preventDefault();
                     target.scrollIntoView({ behavior: 'smooth' });
@@ -1423,8 +1428,17 @@
             localStorage.setItem(CARRITO_STORAGE_KEY, JSON.stringify(carrito));
         }
     
+        function urlAbsoluta(ruta) {
+            if (!ruta || /^https?:\/\//i.test(ruta)) return ruta;
+            try {
+                return new URL(ruta, window.location.href).href;
+            } catch (e) {
+                return ruta;
+            }
+        }
+
         function construirEnlaceWhatsApp(producto, cantidad) {
-            const mensaje = `Hola, estoy interesado en comprar:\n*${producto.nombre}* (${producto.precio})\nCantidad: ${cantidad}\n\n¿Podrían darme más información?\n\nImagen del producto: ${producto.img}`;
+            const mensaje = `Hola, estoy interesado en comprar:\n*${producto.nombre}* (${producto.precio})\nCantidad: ${cantidad}\n\n¿Podrían darme más información?\n\nImagen del producto: ${urlAbsoluta(producto.img)}`;
             return `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
         }
     
@@ -1733,6 +1747,11 @@
         // "sub" (solo para vinos) debe ser: "tinto", "blanco", "rosado", "espumante" o "" si no aplica
         // "masVendido: true" muestra el producto en el carrusel de más vendidos
         // ============================================================
+        const IMG_PISCO = "https://lh3.googleusercontent.com/aida-public/AB6AXuBq8P1Pnhjc8XcZRBK_DqgJRGeu2i5OOTqubGtk3F6rMGuRkEZWJC3nNxBYHPe5ICnkITc4nSgxVUp4NQriNwZZRVFuihBnzPoM7PXFseGYjMMa223JChkbWuEgCoI4rFHgQzKODND2mzcKDqZJ_b0JuGBE3SfsSZz26WdND6nEWTVXUkD6iAyNul__3YfGPbz6KXeWmcvi5cYHvYjwbH8tqPZDu0Uk0hLC6Eq9Z7bQEc7jYx6CbMD_0mNWyF_m2D6XUc3wVzdmw6DA";
+        const IMG_VINO = "https://lh3.googleusercontent.com/aida-public/AB6AXuBLUOXsziyrdLTb7bonvFh_COazrpI_h3zbFTriMxLSKCqPHLLpCEW4m1wAaegOCpv4rLat8pKLYD5_uZTDcsOWQHAyDo6IQz1Hx348HxwxHbr6JA6ker_F8GKCNcA8QOS2LOz3q_ruhvSgHWNSQQV_tBN1yDc3kPNt5PzHnoexGqIyZDLO4MFBdX5oE2MXpBQTKTDhgYCXKTnWg0O3KD88n8XbrbCgjSx1bF3ubBWfIfgtZPAt5BRtjPXcwhlD2S--cHXnc_v2PKN7";
+        const IMG_LICOR = "https://lh3.googleusercontent.com/aida-public/AB6AXuBnAOLzQPeHklzYhOUhN21VZyvnpFZU_RxOw7rqM_EKt_fvgOFkDbYdlaP7AEwbXGMqK-8-E_r2P9lOOwGYffoKqUY7ybT8uhj0Y_rhlRp-ER-I-AtTm-SJ4bAyT3-pb7-RRqpwBhjrJFn7fVqAX0GI2jJhV5J1qry3iD55yyG1ns0CD-ePjORGphX343xdqdeLu_f_eOJSVzNYyNOb4QIp-aX51TkrH664oLZwyrwiPl4DUb7EtMJV7jHc2u8xYwxkdWtsGvI7cIeD";
+        const IMG_MALBEC = "https://lh3.googleusercontent.com/aida-public/AB6AXuBJjqWvVIiFRznzCLAR-14n1eIaYL9yPcuoQdR0BMi_Mo8XyCN054Zy5ih9VgKQOkZWp510TpXLnQA7x_BMkjQ0gS8UD_C0m3XGzjgVHxHS65PK93-GfA47eP5IAj4RsQO1aE0M9Qh5bKYv3dsyN8cPqv7Kn742ql9sJbHDA9BQ_VN6MdLefVYD3yPNYhBpdhgK92Act6j-884rXDT6ijr2FPk_5HWUCr6mOhJ5enYhGxLtsM2SRmregwVQNetkO9fL7B4ZtBY3jiNF";
+
         const productosCatalogo = [
     
             // ---------- PRODUCTO 1 Wisky ----------
@@ -1747,7 +1766,7 @@
                 tag: "Más Vendido",        // 👈 etiqueta visible (deja "" para ninguna)
                 masVendido: true,
                 desc: "El whisky escocés más vendido. Sabor audaz y ahumado, ideal con hielo o en cocteles",
-                img: "imagenesp/redlabel.jpg"
+                img: "Imagenesp/redlabel.jpg"
             },
     
             // ---------- PRODUCTO 2 ----------
@@ -1777,7 +1796,7 @@
                 tag: "Edición Limitada",
                 masVendido: true,
                 desc: "Mezcla maestra de uvas selectas con 2 años de reposo en barrica.",
-                img: "imagenes/acholado-centenario.jpg"
+                img: IMG_PISCO
             },
     
             // ---------- PRODUCTO 4 ----------
@@ -1806,7 +1825,7 @@
                 precio: "$78.00 USD",
                 tag: "",
                 desc: "Notas de cassis y especias con un envejecimiento de 12 meses en roble francés.",
-                img: "imagenes/cabernet-sauvignon-reserva.jpg"
+                img: IMG_MALBEC
             },
     
             // ---------- PRODUCTO 6 ----------
@@ -1820,7 +1839,7 @@
                 precio: "$150.00 USD",
                 tag: "Colección",
                 desc: "Elaboración artesanal en lotes pequeños con infusión de hierbas andinas.",
-                img: "imagenes/licor-edicion-dorada.jpg"
+                img: IMG_LICOR
             },
     
             // ---------- PRODUCTO 7 ----------
@@ -1834,7 +1853,7 @@
                 precio: "$68.00 USD",
                 tag: "",
                 desc: "Fresco y mineral, con notas cítricas y un final crujiente ideal para mariscos.",
-                img: "imagenes/sauvignon-blanc-costa-sur.jpg"
+                img: IMG_VINO
             },
     
             // ---------- PRODUCTO 8 ----------
@@ -1848,7 +1867,7 @@
                 precio: "$92.00 USD",
                 tag: "",
                 desc: "Untuoso, con notas de vainilla y mantequilla por su crianza en barrica francesa.",
-                img: "imagenes/chardonnay-barrica-roble.jpg"
+                img: IMG_VINO
             },
     
             // ---------- PRODUCTO 9 ----------
@@ -1862,7 +1881,7 @@
                 precio: "$62.00 USD",
                 tag: "Nuevo",
                 desc: "Ligero y afrutado, con aromas a fresa y un color rosa pálido elegante.",
-                img: "imagenes/rose-de-verano.jpg"
+                img: IMG_VINO
             },
     
             // ---------- PRODUCTO 10 ----------
@@ -1876,7 +1895,7 @@
                 precio: "$58.00 USD",
                 tag: "",
                 desc: "Semi-dulce, con notas florales y un perfil suave perfecto para brindis.",
-                img: "imagenes/malvasia-rosado-suave.jpg"
+                img: IMG_VINO
             },
     
             // ---------- PRODUCTO 11 ----------
@@ -1890,7 +1909,7 @@
                 precio: "$98.00 USD",
                 tag: "Edición Limitada",
                 desc: "Burbuja fina y persistente, elaborado con método tradicional sin azúcar añadida.",
-                img: "imagenes/espumante-brut-nature.jpg"
+                img: IMG_VINO
             },
     
             // ---------- PRODUCTO 12 ----------
@@ -1904,7 +1923,7 @@
                 precio: "$104.00 USD",
                 tag: "",
                 desc: "Aromas a frutos rojos y un toque dulce equilibrado, ideal para celebraciones.",
-                img: "imagenes/espumante-rose-demi-sec.jpg"
+                img: IMG_VINO
             },
             // ---------- PRODUCTO 13 ----------
             {
@@ -1931,7 +1950,7 @@
                 precio: "S/29.90",
                 tag: "Más Vendido",
                 masVendido: true,
-                desc: "Profundos aromas de melazas, mieles y especias dulces, de canela y vainilla,con un envolvente final de granos de café recién tostados, cacao y chocolate negro.",
+                desc: "Profundos aromas de melazas, mieles y especias dulces, de canela y vainilla, con un envolvente final de granos de café recién tostados, cacao y chocolate negro.",
                 img: "https://licoreriasunidas.pe/cdn/shop/products/21fb79e6f712438391bff427b5e48dce.webp?v=1677698170&width=500"
 
             }
@@ -2075,7 +2094,7 @@
                     subtitle: 'Escocia & Mundo',
                     cat: 'Wisky',
                     icon: 'stars',
-                    img: 'imagenesp/redlabel.jpg'
+                    img: 'Imagenesp/redlabel.jpg'
                 },
                 {
                     label: 'Ron',
@@ -2258,7 +2277,7 @@
                     label: 'Whisky',
                     subtitle: 'Escocia & Mundo',
                     icon: 'stars',
-                    img: 'imagenesp/redlabel.jpg'
+                    img: 'Imagenesp/redlabel.jpg'
                 }
             ];
 
