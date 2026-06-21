@@ -1,0 +1,19 @@
+﻿{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Abrir CRUZARTE+ (index.html)",
+            "type": "msedge",
+            "request": "launch",
+            "file": "${workspaceFolder}/index.html"
+        },
+        {
+            "name": "Servir CRUZARTE+ (localhost:8080)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "http://localhost:8080",
+            "preLaunchTask": "Iniciar servidor web",
+            "webRoot": "${workspaceFolder}"
+        }
+    ]
+}
