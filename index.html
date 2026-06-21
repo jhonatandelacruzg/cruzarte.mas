@@ -1,0 +1,2533 @@
+<!DOCTYPE html><html class="dark" lang="es" style=""><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>CRUZARTE+</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;display=swap" rel="stylesheet">
+    <style>
+            @font-face {
+                font-family: 'Geist';
+                src: url('https://cdn.jsdelivr.net/npm/geist-font@latest/dist/fonts/geist-sans/Geist-Regular.woff2') format('woff2');
+                font-weight: 400;
+            }
+            @font-face {
+                font-family: 'Geist';
+                src: url('https://cdn.jsdelivr.net/npm/geist-font@latest/dist/fonts/geist-sans/Geist-Bold.woff2') format('woff2');
+                font-weight: 700;
+            }
+            body {
+                font-family: 'Geist', sans-serif;
+                background-color: #16130b;
+                color: #eae1d4;
+                margin: 0;
+                -webkit-font-smoothing: antialiased;
+            }
+            .material-symbols-outlined {
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+            ::-webkit-scrollbar { width: 8px; }
+            ::-webkit-scrollbar-track { background: #16130b; }
+            ::-webkit-scrollbar-thumb { background: #3d392f; border-radius: 4px; }
+            ::-webkit-scrollbar-thumb:hover { background: #ecc246; }
+            body.age-locked { overflow: hidden; }
+            #age-gate { display: flex; }
+            body.age-verified #age-gate { display: none; }
+            .faq-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+            .faq-toggle[aria-expanded="true"] .faq-icon { transform: rotate(180deg); }
+            body.catalog-open { overflow: hidden; }
+            #catalogo-overlay { display: none; }
+            body.catalog-open #catalogo-overlay { display: block; }
+            body.cart-open { overflow: hidden; }
+            #carrito-overlay { display: none; }
+            body.cart-open #carrito-overlay { display: block; }
+            #carrito-panel {
+                transform: translateX(100%);
+                transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+            }
+            body.cart-open #carrito-panel { transform: translateX(0); }
+            #cart-toast {
+                transform: translateY(120%);
+                transition: transform 0.35s ease, opacity 0.35s ease;
+            }
+            #cart-toast.is-visible {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            /* Carrito fijo en esquina (solo catálogo) */
+            body:not(.catalog-open) #cart-float { display: none; }
+            #cart-float {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: min(340px, calc(100vw - 40px));
+                z-index: 95;
+            }
+            #cart-float.is-minimized .cart-float-body { display: none; }
+            #cart-float.is-minimized { width: auto; min-width: 220px; }
+            #cart-float:not(.has-items) .cart-float-wa-wrap,
+            #cart-float:not(.has-items) .cart-float-total-wrap { display: none; }
+            body.cart-open #cart-float { opacity: 0.35; pointer-events: none; }
+            .cart-float-box {
+                background: rgba(35, 31, 23, 0.98);
+                backdrop-filter: blur(14px);
+                border: 1px solid rgba(236, 194, 70, 0.4);
+                border-radius: 0.75rem;
+                box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+                overflow: hidden;
+            }
+            .cart-float-items {
+                max-height: min(320px, 42vh);
+                overflow-y: auto;
+                padding: 8px 10px;
+            }
+            .cart-float-items::-webkit-scrollbar { width: 4px; }
+            .cart-float-items::-webkit-scrollbar-thumb { background: rgba(236, 194, 70, 0.35); border-radius: 4px; }
+            .cart-float-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 8px 6px;
+                border-radius: 0.5rem;
+                border-bottom: 1px solid rgba(255,255,255,0.06);
+            }
+            .cart-float-item:last-child { border-bottom: none; }
+            .cart-float-item.is-new {
+                animation: cart-float-pop 0.6s ease;
+                background: rgba(236, 194, 70, 0.08);
+            }
+            .cart-float-qty {
+                display: flex;
+                align-items: center;
+                border: 1px solid rgba(236, 194, 70, 0.35);
+                border-radius: 0.375rem;
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+            .cart-float-qty button {
+                width: 26px;
+                height: 26px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(236, 194, 70, 0.12);
+                color: #ecc246;
+                font-size: 14px;
+                line-height: 1;
+                transition: background 0.2s;
+            }
+            .cart-float-qty button:hover { background: rgba(236, 194, 70, 0.25); }
+            .cart-float-qty-input {
+                width: 34px;
+                height: 26px;
+                text-align: center;
+                background: rgba(0,0,0,0.25);
+                border: none;
+                border-left: 1px solid rgba(236, 194, 70, 0.2);
+                border-right: 1px solid rgba(236, 194, 70, 0.2);
+                color: #fff;
+                font-size: 12px;
+                font-weight: 600;
+                -moz-appearance: textfield;
+            }
+            .cart-float-qty-input::-webkit-outer-spin-button,
+            .cart-float-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+            @keyframes cart-float-pop {
+                0% { transform: scale(0.97); opacity: 0.6; }
+                50% { transform: scale(1.01); }
+                100% { transform: scale(1); opacity: 1; }
+            }
+            @media (max-width: 640px) {
+                #cart-float {
+                    bottom: 12px;
+                    right: 12px;
+                    left: 12px;
+                    width: auto;
+                }
+            }
+            #bestsellers-viewport { overflow: hidden; }
+            #bestsellers-track { display: flex; transition: transform 0.5s ease; will-change: transform; }
+            .bestseller-slide { flex: 0 0 100%; padding: 0 4px; box-sizing: border-box; }
+            @media (min-width: 640px) { .bestseller-slide { flex: 0 0 50%; } }
+            @media (min-width: 1024px) { .bestseller-slide { flex: 0 0 33.333%; } }
+            @media (min-width: 1280px) { .bestseller-slide { flex: 0 0 25%; } }
+            /* Categorías 3D */
+            .cat-3d-stage {
+                position: relative;
+                height: min(520px, 70vh);
+                min-height: 380px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                perspective: 1400px;
+                perspective-origin: 50% 45%;
+                touch-action: pan-y;
+            }
+            .cat-3d-ring {
+                position: relative;
+                width: min(280px, 72vw);
+                height: min(360px, 58vh);
+                transform-style: preserve-3d;
+                transition: transform 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+                will-change: transform;
+            }
+            .cat-3d-card {
+                position: absolute;
+                inset: 0;
+                transform-style: preserve-3d;
+                cursor: pointer;
+                transition: filter 0.45s ease, opacity 0.45s ease;
+            }
+            .cat-3d-card:not(.is-front) {
+                filter: brightness(0.45) saturate(0.7);
+                opacity: 0.85;
+            }
+            .cat-3d-card.is-front {
+                filter: brightness(1) saturate(1);
+                opacity: 1;
+                z-index: 2;
+            }
+            .cat-3d-card-inner {
+                width: 100%;
+                height: 100%;
+                border-radius: 0.5rem;
+                overflow: hidden;
+                border: 1px solid #4d4635;
+                background: #2e2a21;
+                backface-visibility: hidden;
+                transform-style: preserve-3d;
+                transition: transform 0.12s ease-out, box-shadow 0.35s ease, border-color 0.35s ease;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+            }
+            .cat-3d-card.is-front .cat-3d-card-inner {
+                border-color: #ecc246;
+                box-shadow: 0 28px 60px rgba(236, 194, 70, 0.22), 0 0 0 1px rgba(236, 194, 70, 0.15);
+            }
+            .cat-3d-card.is-front:hover .cat-3d-card-inner {
+                box-shadow: 0 32px 70px rgba(236, 194, 70, 0.35), 0 0 0 1px rgba(236, 194, 70, 0.3);
+            }
+            .cat-3d-glow {
+                position: absolute;
+                inset: -20%;
+                background: radial-gradient(ellipse at center, rgba(236, 194, 70, 0.12) 0%, transparent 70%);
+                pointer-events: none;
+                z-index: 0;
+            }
+            .cat-3d-reflection {
+                position: absolute;
+                bottom: -18%;
+                left: 10%;
+                right: 10%;
+                height: 40%;
+                background: linear-gradient(to bottom, rgba(236, 194, 70, 0.08), transparent);
+                transform: scaleY(-1) rotateX(60deg);
+                opacity: 0.4;
+                filter: blur(8px);
+                pointer-events: none;
+            }
+            /* Trust / Por qué elegirnos */
+            .trust-glow {
+                background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(236, 194, 70, 0.14) 0%, transparent 65%);
+            }
+            .trust-card {
+                transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+            }
+            .trust-card:hover {
+                transform: translateY(-4px);
+                border-color: rgba(236, 194, 70, 0.45);
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(236, 194, 70, 0.1);
+            }
+            .trust-pulse-ring {
+                animation: trust-pulse 2.5s ease-out infinite;
+            }
+            @keyframes trust-pulse {
+                0% { transform: scale(0.85); opacity: 0.7; }
+                70% { transform: scale(1.35); opacity: 0; }
+                100% { transform: scale(1.35); opacity: 0; }
+            }
+            .trust-map-dot {
+                animation: trust-dot 2s ease-in-out infinite;
+            }
+            .trust-map-dot:nth-child(2) { animation-delay: 0.4s; }
+            .trust-map-dot:nth-child(3) { animation-delay: 0.8s; }
+            .trust-map-dot:nth-child(4) { animation-delay: 1.2s; }
+            .trust-map-dot:nth-child(5) { animation-delay: 1.6s; }
+            @keyframes trust-dot {
+                0%, 100% { opacity: 0.35; transform: scale(1); }
+                50% { opacity: 1; transform: scale(1.25); }
+            }
+            .trust-stat-value {
+                background: linear-gradient(135deg, #ecc246 0%, #f5dfa0 50%, #ecc246 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            /* Hero 3D */
+            .hero-gradient {
+                background:
+                    radial-gradient(ellipse 70% 50% at 20% 40%, rgba(236, 194, 70, 0.12) 0%, transparent 55%),
+                    radial-gradient(ellipse 50% 40% at 80% 20%, rgba(236, 194, 70, 0.08) 0%, transparent 50%),
+                    linear-gradient(180deg, #110e07 0%, #16130b 40%, #1f1b13 100%);
+            }
+            .hero-grid-bg {
+                background-image:
+                    linear-gradient(rgba(236, 194, 70, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(236, 194, 70, 0.03) 1px, transparent 1px);
+                background-size: 48px 48px;
+                mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 20%, transparent 75%);
+            }
+            .hero-title-gradient {
+                background: linear-gradient(135deg, #ffffff 0%, #eae1d4 45%, #ecc246 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            /* Hero: showcase 3D cinematográfico */
+            .hero-cats-wrap {
+                position: relative;
+                border-radius: 1.25rem;
+                border: 1px solid rgba(236, 194, 70, 0.28);
+                background: linear-gradient(165deg, rgba(28, 24, 16, 0.98) 0%, rgba(10, 8, 4, 0.99) 100%);
+                overflow: hidden;
+                box-shadow:
+                    0 40px 80px rgba(0, 0, 0, 0.55),
+                    0 0 0 1px rgba(236, 194, 70, 0.06),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            }
+            .hero-showcase-aurora {
+                position: absolute;
+                inset: 0;
+                background:
+                    radial-gradient(ellipse 90% 60% at 50% 110%, rgba(236, 194, 70, 0.22) 0%, transparent 55%),
+                    radial-gradient(ellipse 50% 40% at 20% 20%, rgba(236, 194, 70, 0.08) 0%, transparent 50%),
+                    radial-gradient(ellipse 40% 35% at 85% 30%, rgba(245, 223, 160, 0.06) 0%, transparent 45%);
+                pointer-events: none;
+                animation: hero-aurora-shift 8s ease-in-out infinite alternate;
+            }
+            @keyframes hero-aurora-shift {
+                0% { opacity: 0.85; transform: scale(1); }
+                100% { opacity: 1; transform: scale(1.05); }
+            }
+            .hero-showcase-particles {
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                overflow: hidden;
+            }
+            .hero-showcase-particle {
+                position: absolute;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background: #ecc246;
+                box-shadow: 0 0 12px rgba(236, 194, 70, 0.8);
+                animation: hero-particle-float 6s ease-in-out infinite;
+                opacity: 0;
+            }
+            @keyframes hero-particle-float {
+                0%, 100% { opacity: 0; transform: translateY(20px) scale(0.5); }
+                20%, 80% { opacity: 0.7; }
+                50% { opacity: 1; transform: translateY(-30px) scale(1); }
+            }
+            .hero-cats-title {
+                display: block;
+                text-align: center;
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.3em;
+                text-transform: uppercase;
+                color: #ecc246;
+                padding: 16px 16px 0;
+                position: relative;
+                z-index: 2;
+            }
+            .hero-cats-scene {
+                position: relative;
+                height: min(480px, 52vh);
+                min-height: 360px;
+                perspective: 1600px;
+                perspective-origin: 50% 42%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .hero-showcase-floor {
+                position: absolute;
+                left: 50%;
+                bottom: 8%;
+                width: 340px;
+                height: 340px;
+                margin-left: -170px;
+                border-radius: 50%;
+                background: radial-gradient(circle, rgba(236, 194, 70, 0.18) 0%, rgba(236, 194, 70, 0.04) 35%, transparent 70%);
+                transform: rotateX(78deg);
+                filter: blur(1px);
+                pointer-events: none;
+            }
+            .hero-showcase-spotlight {
+                position: absolute;
+                left: 50%;
+                top: 5%;
+                width: 200px;
+                height: 70%;
+                margin-left: -100px;
+                background: linear-gradient(to bottom, rgba(236, 194, 70, 0.12) 0%, transparent 75%);
+                clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+                pointer-events: none;
+                animation: hero-spotlight-pulse 4s ease-in-out infinite;
+            }
+            @keyframes hero-spotlight-pulse {
+                0%, 100% { opacity: 0.6; }
+                50% { opacity: 1; }
+            }
+            .hero-cats-scene-inner {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                transform-style: preserve-3d;
+                transform: rotateX(14deg) rotateY(-8deg);
+                transition: transform 0.15s ease-out;
+                animation: hero-scene-float 6s ease-in-out infinite;
+            }
+            @keyframes hero-scene-float {
+                0%, 100% { transform: rotateX(14deg) rotateY(-8deg) translateY(0); }
+                50% { transform: rotateX(16deg) rotateY(-6deg) translateY(-10px); }
+            }
+            .hero-showcase-beams {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 0;
+                height: 0;
+                transform-style: preserve-3d;
+                pointer-events: none;
+            }
+            .hero-showcase-beams span {
+                position: absolute;
+                left: -1px;
+                top: -120px;
+                width: 2px;
+                height: 240px;
+                background: linear-gradient(to bottom, transparent, rgba(236, 194, 70, 0.35), transparent);
+                transform-origin: center center;
+                animation: hero-beam-spin 18s linear infinite;
+            }
+            .hero-showcase-beams span:nth-child(2) { animation-duration: 24s; animation-direction: reverse; opacity: 0.5; }
+            .hero-showcase-beams span:nth-child(3) { animation-duration: 30s; opacity: 0.3; width: 1px; }
+            @keyframes hero-beam-spin {
+                from { transform: rotateY(0deg); }
+                to { transform: rotateY(360deg); }
+            }
+            .hero-bottle-showcase {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 64px;
+                height: 160px;
+                margin: -95px 0 0 -32px;
+                transform-style: preserve-3d;
+                transform: translateZ(80px);
+                pointer-events: none;
+                z-index: 3;
+                animation: hero-bottle-float 5s ease-in-out infinite;
+            }
+            @keyframes hero-bottle-float {
+                0%, 100% { transform: translateZ(80px) translateY(0); }
+                50% { transform: translateZ(90px) translateY(-12px); }
+            }
+            .hero-bottle-glow {
+                position: absolute;
+                left: 50%;
+                bottom: 0;
+                width: 120px;
+                height: 120px;
+                margin-left: -60px;
+                background: radial-gradient(circle, rgba(236, 194, 70, 0.35) 0%, transparent 70%);
+                filter: blur(16px);
+                animation: hero-bottle-glow 3s ease-in-out infinite;
+            }
+            @keyframes hero-bottle-glow {
+                0%, 100% { opacity: 0.7; transform: scale(1); }
+                50% { opacity: 1; transform: scale(1.15); }
+            }
+            .hero-bottle-cap {
+                position: absolute;
+                top: 0;
+                left: 50%;
+                width: 28px;
+                height: 18px;
+                margin-left: -14px;
+                background: linear-gradient(180deg, #f5dfa0, #ecc246);
+                border-radius: 4px 4px 2px 2px;
+                box-shadow: 0 2px 8px rgba(236, 194, 70, 0.4);
+            }
+            .hero-bottle-neck {
+                position: absolute;
+                top: 16px;
+                left: 50%;
+                width: 20px;
+                height: 28px;
+                margin-left: -10px;
+                background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(236,194,70,0.12), rgba(255,255,255,0.06));
+                border: 1px solid rgba(236, 194, 70, 0.25);
+            }
+            .hero-bottle-body {
+                position: absolute;
+                top: 42px;
+                left: 50%;
+                width: 56px;
+                height: 110px;
+                margin-left: -28px;
+                background: linear-gradient(135deg, rgba(236,194,70,0.12) 0%, rgba(255,255,255,0.04) 40%, rgba(236,194,70,0.08) 100%);
+                border: 1px solid rgba(236, 194, 70, 0.35);
+                border-radius: 10px 10px 20px 20px;
+                box-shadow: inset 0 0 40px rgba(236, 194, 70, 0.08), 0 16px 50px rgba(0, 0, 0, 0.4);
+            }
+            .hero-bottle-body::after {
+                content: '';
+                position: absolute;
+                top: 12px;
+                left: 8px;
+                width: 12px;
+                height: 60%;
+                background: linear-gradient(to bottom, rgba(255,255,255,0.15), transparent);
+                border-radius: 8px;
+                filter: blur(2px);
+            }
+            .hero-cats-ring {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 0;
+                height: 0;
+                transform-style: preserve-3d;
+                animation: hero-cats-spin 20s linear infinite;
+            }
+            .hero-cats-wrap:hover .hero-cats-ring {
+                animation-play-state: paused;
+            }
+            @keyframes hero-cats-spin {
+                from { transform: rotateY(0deg); }
+                to { transform: rotateY(-360deg); }
+            }
+            .hero-orbit-ring {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 0;
+                height: 0;
+                transform-style: preserve-3d;
+                animation: hero-orbit-spin 12s linear infinite reverse;
+                pointer-events: none;
+            }
+            @keyframes hero-orbit-spin {
+                from { transform: rotateY(0deg) rotateX(20deg); }
+                to { transform: rotateY(360deg) rotateX(20deg); }
+            }
+            .hero-orbit-dot {
+                position: absolute;
+                width: 10px;
+                height: 10px;
+                margin: -5px 0 0 -5px;
+                border-radius: 50%;
+                background: #ecc246;
+                box-shadow: 0 0 20px rgba(236, 194, 70, 0.9), 0 0 40px rgba(236, 194, 70, 0.4);
+            }
+            .hero-cats-card {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 168px;
+                height: 228px;
+                margin: -114px 0 0 -84px;
+                transform-style: preserve-3d;
+                cursor: pointer;
+                transition: filter 0.4s ease;
+            }
+            .hero-cats-card.is-front {
+                z-index: 10;
+            }
+            .hero-cats-card.is-front .hero-cats-card-inner {
+                border-color: rgba(236, 194, 70, 0.85);
+                box-shadow:
+                    0 30px 60px rgba(0, 0, 0, 0.6),
+                    0 0 40px rgba(236, 194, 70, 0.35),
+                    inset 0 0 30px rgba(236, 194, 70, 0.08);
+                transform: scale(1.12);
+            }
+            .hero-cats-card.is-front .hero-cats-card-bg { opacity: 0.85; }
+            .hero-cats-card:hover .hero-cats-card-inner {
+                border-color: rgba(236, 194, 70, 0.9);
+                box-shadow: 0 28px 60px rgba(236, 194, 70, 0.3);
+            }
+            .hero-cats-card-inner {
+                width: 100%;
+                height: 100%;
+                border-radius: 0.875rem;
+                overflow: hidden;
+                border: 2px solid rgba(236, 194, 70, 0.3);
+                box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55);
+                backface-visibility: hidden;
+                transition: border-color 0.4s, box-shadow 0.4s, transform 0.4s;
+                position: relative;
+            }
+            .hero-cats-card-shine {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%);
+                transform: translateX(-120%);
+                animation: hero-card-shine 4s ease-in-out infinite;
+                pointer-events: none;
+                z-index: 3;
+            }
+            .hero-cats-card.is-front .hero-cats-card-shine {
+                animation-duration: 2.5s;
+            }
+            @keyframes hero-card-shine {
+                0%, 70%, 100% { transform: translateX(-120%); }
+                85% { transform: translateX(120%); }
+            }
+            .hero-cats-card-bg {
+                position: absolute;
+                inset: 0;
+                background-size: cover;
+                background-position: center;
+                opacity: 0.65;
+                transition: opacity 0.4s;
+            }
+            .hero-cats-card-overlay {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(to top, rgba(8, 6, 3, 0.97) 0%, rgba(8, 6, 3, 0.45) 50%, rgba(236, 194, 70, 0.06) 100%);
+            }
+            .hero-cats-card-content {
+                position: absolute;
+                inset: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding: 16px;
+                z-index: 2;
+            }
+            .hero-cats-card-num {
+                font-size: 9px;
+                font-weight: 700;
+                letter-spacing: 0.2em;
+                color: rgba(236, 194, 70, 0.7);
+                text-transform: uppercase;
+            }
+            .hero-cats-hint {
+                text-align: center;
+                font-size: 10px;
+                letter-spacing: 0.15em;
+                text-transform: uppercase;
+                color: rgba(234, 225, 212, 0.45);
+                padding: 12px 16px 16px;
+                position: relative;
+                z-index: 2;
+            }
+            @media (max-width: 640px) {
+                .hero-cats-scene { min-height: 300px; height: 340px; }
+                .hero-cats-card { width: 130px; height: 178px; margin: -89px 0 0 -65px; }
+                .hero-showcase-floor { width: 240px; height: 240px; margin-left: -120px; }
+                .hero-bottle-showcase {
+                    animation: hero-bottle-float-mobile 5s ease-in-out infinite;
+                }
+            }
+            @keyframes hero-bottle-float-mobile {
+                0%, 100% { transform: scale(0.85) translateZ(60px) translateY(0); }
+                50% { transform: scale(0.85) translateZ(70px) translateY(-10px); }
+            }
+            .hero-step-line {
+                background: linear-gradient(90deg, transparent, rgba(236, 194, 70, 0.4), transparent);
+            }
+            .hero-marquee-track {
+                display: flex;
+                width: max-content;
+                animation: hero-marquee 35s linear infinite;
+            }
+            @keyframes hero-marquee {
+                from { transform: translateX(0); }
+                to { transform: translateX(-50%); }
+            }
+            .hero-chip {
+                transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+            }
+            .hero-chip:hover {
+                transform: translateY(-2px) scale(1.04);
+                border-color: rgba(236, 194, 70, 0.6);
+                background: rgba(236, 194, 70, 0.1);
+            }
+            .hero-scroll-indicator {
+                animation: hero-bounce 2s ease-in-out infinite;
+            }
+            @keyframes hero-bounce {
+                0%, 100% { transform: translateY(0); opacity: 0.6; }
+                50% { transform: translateY(8px); opacity: 1; }
+            }
+        </style>
+    <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        "colors": {
+                            "primary": "#ecc246",
+                            "on-primary": "#3d2e00",
+                            "primary-container": "#c9a227",
+                            "on-primary-container": "#4b3a00",
+                            "background": "#16130b",
+                            "on-background": "#eae1d4",
+                            "surface": "#16130b",
+                            "on-surface": "#eae1d4",
+                            "surface-variant": "#39342b",
+                            "on-surface-variant": "#d1c5af",
+                            "outline": "#99907b",
+                            "outline-variant": "#4d4635",
+                            "surface-bright": "#3d392f",
+                            "surface-dim": "#16130b",
+                            "surface-container": "#231f17",
+                            "surface-container-low": "#1f1b13",
+                            "surface-container-high": "#2e2a21",
+                            "surface-container-highest": "#39342b",
+                            "surface-container-lowest": "#110e07"
+                        },
+                        "borderRadius": {
+                            "DEFAULT": "0.125rem",
+                            "lg": "0.25rem",
+                            "xl": "0.5rem",
+                            "full": "0.75rem"
+                        },
+                        "spacing": {
+                            "stack-sm": "8px",
+                            "stack-md": "16px",
+                            "stack-lg": "32px",
+                            "section-gap": "120px",
+                            "container-max": "1280px",
+                            "base": "8px",
+                            "gutter": "24px"
+                        },
+                        "fontFamily": {
+                            "headline-xl": ["Geist"],
+                            "headline-lg": ["Geist"],
+                            "headline-md": ["Geist"],
+                            "body-lg": ["Geist"],
+                            "body-md": ["Geist"],
+                            "label-sm": ["Geist"]
+                        },
+                        "fontSize": {
+                            "headline-xl": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                            "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                            "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                            "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                            "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                            "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700" }]
+                        }
+                    }
+                }
+            }
+        </script>
+    </head>
+    <body class="bg-background text-on-background age-locked">
+    
+    <!-- Age Verification Gate -->
+    <div id="age-gate" class="fixed inset-0 z-[100] items-center justify-center bg-black/90 backdrop-blur-sm px-gutter">
+    <div class="bg-surface-container border border-outline-variant rounded-lg max-w-md w-full p-10 text-center">
+    <div class="font-headline-lg text-primary mb-6">CRUZARTE+</div>
+    <h2 class="font-headline-md text-white mb-4">Verificación de Edad</h2>
+    <p class="font-body-md text-on-surface mb-8">Este sitio contiene contenido sobre bebidas alcohólicas. Para continuar, confirme que es mayor de edad en su país de residencia.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+    <button id="age-confirm" class="bg-primary text-on-primary px-8 py-4 font-label-sm uppercase tracking-widest hover:bg-primary-container transition-colors">Soy mayor de edad</button>
+    <a href="https://www.google.com" class="border border-outline-variant text-on-surface px-8 py-4 font-label-sm uppercase tracking-widest hover:border-primary hover:text-primary transition-colors">Salir</a>
+    </div>
+    <p class="mt-6 text-[10px] text-on-surface-variant uppercase tracking-widest opacity-70">Beber en exceso es dañino.</p>
+    </div>
+    </div>
+    
+    <!-- Navigation -->
+    <header class="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-md border-b border-outline-variant">
+    <nav class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
+    <a href="#inicio" onclick="irAlInicio(event)" class="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary hover:text-primary-container transition-colors">CRUZARTE+</a>
+    <div class="hidden md:flex gap-10 items-center">
+    <a class="font-label-sm text-label-sm uppercase tracking-widest text-primary border-b-2 border-primary pb-1" href="#" onclick="abrirCatalogo(event)">Tienda</a>
+    <a class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface hover:text-primary transition-colors" href="#categorias">Categorías</a>
+    <a class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface hover:text-primary transition-colors" href="#mas-vendidos">Más Vendidos</a>
+    <a class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface hover:text-primary transition-colors" href="#testimonios">Opiniones</a>
+    <a class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface hover:text-primary transition-colors" href="#preguntas-frecuentes">Preguntas Frecuentes</a>
+    <a class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface hover:text-primary transition-colors" href="#suscripcion">Suscripción</a>
+    </div>
+    <div class="flex items-center gap-6">
+    <button type="button" id="cart-toggle" onclick="abrirCarrito()" class="flex items-center gap-2 group relative" aria-label="Abrir carrito">
+    <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">shopping_cart</span>
+    <span class="hidden sm:block font-label-sm text-primary uppercase">Carrito (<span id="cart-count">0</span>)</span>
+    <span id="cart-badge" class="sm:hidden absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-on-primary text-[10px] font-bold flex items-center justify-center hidden">0</span>
+    </button>
+    <button class="material-symbols-outlined text-on-surface hover:text-primary transition-colors">person</button>
+    <button class="md:hidden material-symbols-outlined text-primary">menu</button>
+    </div>
+    </nav>
+    </header>
+    
+    <!-- Carrito de compras -->
+    <div id="carrito-overlay" class="fixed inset-0 z-[95]">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="cerrarCarrito()"></div>
+    <aside id="carrito-panel" class="fixed right-0 top-0 h-full w-full max-w-md bg-surface-container border-l border-outline-variant flex flex-col shadow-2xl">
+    <div class="flex items-center justify-between px-gutter h-20 border-b border-outline-variant shrink-0">
+    <div class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-primary">shopping_cart</span>
+    <h2 class="font-headline-md text-white">Mi Carrito</h2>
+    </div>
+    <button type="button" onclick="cerrarCarrito()" class="text-on-surface hover:text-primary transition-colors" aria-label="Cerrar carrito">
+    <span class="material-symbols-outlined">close</span>
+    </button>
+    </div>
+    <div id="carrito-items" class="flex-grow overflow-y-auto px-gutter py-6 space-y-4"></div>
+    <div class="border-t border-outline-variant px-gutter py-6 shrink-0 bg-surface-container-low">
+    <p class="font-label-sm text-on-surface-variant uppercase tracking-widest text-[11px] mb-1">Resumen</p>
+    <p class="text-white font-headline-md mb-4"><span id="carrito-total-unidades">0</span> productos en total</p>
+    <button type="button" id="carrito-wa-btn" onclick="comprarCarritoWhatsApp()" disabled class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary px-6 py-4 font-label-sm uppercase tracking-widest hover:bg-primary-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed mb-3">
+    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-1.746-.873-2.888-1.557-4.035-3.53-.305-.526.305-.488.873-1.624.099-.198.05-.371-.05-.52-.099-.148-.669-1.611-.916-2.158-.246-.547-.495-.471-.67-.471-.173 0-.371-.025-.57-.025-.198 0-.52.075-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.057 3.133 5.06 4.27 2.502.922 3.011.74 3.555.694.544-.05 1.758-.717 2.005-1.413.247-.694.247-1.29.173-1.413-.075-.124-.272-.198-.57-.347z"></path><path d="M12.012 2.001c-5.522 0-9.998 4.476-9.998 9.998 0 1.948.557 3.766 1.521 5.301L2 22l4.85-1.501a9.953 9.953 0 0 0 5.162 1.452c5.522 0 9.998-4.476 9.998-9.998s-4.476-9.952-9.998-9.952zm0 18.099a8.094 8.094 0 0 1-4.347-1.255l-.312-.198-3.067.948.978-2.99-.208-.322a8.063 8.063 0 0 1-1.252-4.336c0-4.46 3.633-8.094 8.094-8.094 4.46 0 8.094 3.633 8.094 8.094 0 4.461-3.633 8.094-8.094 8.094z"></path></svg>
+    Comprar por WhatsApp
+    </button>
+    <button type="button" onclick="vaciarCarrito()" class="w-full text-on-surface-variant hover:text-primary font-label-sm uppercase tracking-widest text-[10px] transition-colors py-2">
+    Vaciar carrito
+    </button>
+    </div>
+    </aside>
+    </div>
+    <div id="cart-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[96] bg-surface-container border border-primary/40 text-white px-6 py-3 rounded-lg font-label-sm uppercase tracking-widest text-[11px] shadow-lg opacity-0 pointer-events-none flex items-center gap-2">
+    <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+    <span id="cart-toast-msg">Agregado al carrito</span>
+    </div>
+    
+    <main class="mt-20">
+    <!-- Hero: Tienda Online — categorías en movimiento 3D -->
+    <section class="relative min-h-screen flex flex-col justify-center hero-gradient overflow-hidden" id="inicio">
+    <div class="absolute inset-0 hero-grid-bg pointer-events-none"></div>
+    <div class="absolute top-1/4 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-1/4 -right-32 w-[28rem] h-[28rem] bg-primary/8 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="relative z-10 max-w-container-max mx-auto px-gutter w-full py-16 lg:py-20 flex-grow flex items-center">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
+    <!-- Contenido principal -->
+    <div class="order-2 lg:order-1">
+    <div class="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-full px-5 py-2 mb-6">
+    <span class="relative flex h-2 w-2">
+    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60"></span>
+    <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+    </span>
+    <span class="font-label-sm text-primary uppercase tracking-[0.2em] text-[11px]">Tienda Online de Licores</span>
+    </div>
+    <h1 class="font-headline-xl text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.05] mb-6">
+    <span class="hero-title-gradient">Todos los Licores</span><br>
+    <span class="text-white">Que Buscas.</span><br>
+    <span class="text-primary">Pide Fácil.</span>
+    </h1>
+    <p class="font-body-lg text-on-surface max-w-lg mb-8 leading-relaxed">
+    CRUZARTE+ es su licorería online en el Perú. Encuentre <strong class="text-white font-normal">piscos, vinos, whiskies, rones y licores</strong> de calidad. Elija su producto, pida por WhatsApp y recíbalo en la puerta de su casa.
+    </p>
+    <!-- Pasos: pedir fácil -->
+    <div class="flex flex-col sm:flex-row gap-4 sm:gap-0 mb-10">
+    <div class="flex items-center gap-3 sm:flex-1">
+    <div class="w-10 h-10 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
+    <span class="font-label-sm text-primary">1</span>
+    </div>
+    <div>
+    <p class="font-label-sm text-white uppercase text-[11px] tracking-wide">Explora</p>
+    <p class="text-xs text-on-surface-variant">Catálogo completo</p>
+    </div>
+    </div>
+    <div class="hidden sm:block w-8 h-px hero-step-line self-center mx-2"></div>
+    <div class="flex items-center gap-3 sm:flex-1">
+    <div class="w-10 h-10 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
+    <span class="font-label-sm text-primary">2</span>
+    </div>
+    <div>
+    <p class="font-label-sm text-white uppercase text-[11px] tracking-wide">Pide</p>
+    <p class="text-xs text-on-surface-variant">Por WhatsApp</p>
+    </div>
+    </div>
+    <div class="hidden sm:block w-8 h-px hero-step-line self-center mx-2"></div>
+    <div class="flex items-center gap-3 sm:flex-1">
+    <div class="w-10 h-10 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
+    <span class="font-label-sm text-primary">3</span>
+    </div>
+    <div>
+    <p class="font-label-sm text-white uppercase text-[11px] tracking-wide">Recibe</p>
+    <p class="text-xs text-on-surface-variant">En todo el Perú</p>
+    </div>
+    </div>
+    </div>
+    <div class="flex flex-wrap gap-4 mb-10">
+    <a class="bg-primary text-on-primary px-10 py-5 font-label-sm uppercase tracking-widest hover:bg-primary-container transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-3 shadow-lg shadow-primary/20" href="#" onclick="abrirCatalogo(event)">
+    Ver Catálogo Completo
+    <span class="material-symbols-outlined">storefront</span>
+    </a>
+    <a class="bg-transparent text-white px-8 py-5 font-label-sm uppercase tracking-widest hover:border-primary hover:text-primary transition-colors border border-outline-variant flex items-center gap-2" href="#categorias">
+    Explorar Categorías
+    <span class="material-symbols-outlined text-[20px]">category</span>
+    </a>
+    </div>
+    <!-- Chips de categorías -->
+    <div class="flex flex-wrap gap-2">
+    <button type="button" onclick="abrirCatalogo(event, 'pisco')" class="hero-chip font-label-sm uppercase tracking-widest text-[10px] px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant hover:text-primary">Piscos</button>
+    <button type="button" onclick="abrirCatalogo(event, 'vino')" class="hero-chip font-label-sm uppercase tracking-widest text-[10px] px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant hover:text-primary">Vinos</button>
+    <button type="button" onclick="abrirCatalogo(event, 'Wisky')" class="hero-chip font-label-sm uppercase tracking-widest text-[10px] px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant hover:text-primary">Whisky</button>
+    <button type="button" onclick="abrirCatalogo(event, 'Ron')" class="hero-chip font-label-sm uppercase tracking-widest text-[10px] px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant hover:text-primary">Ron</button>
+    <button type="button" onclick="abrirCatalogo(event, 'licor')" class="hero-chip font-label-sm uppercase tracking-widest text-[10px] px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant hover:text-primary">Licores</button>
+    </div>
+    </div>
+    <!-- Categorías 3D en movimiento automático -->
+    <div class="order-1 lg:order-2">
+    <div class="hero-cats-wrap" id="hero-cats-wrap">
+    <div class="hero-showcase-aurora"></div>
+    <div class="hero-showcase-particles" id="hero-showcase-particles"></div>
+    <span class="hero-cats-title">Lo que vendemos</span>
+    <div class="hero-cats-scene" id="hero-cats-scene">
+    <div class="hero-showcase-floor"></div>
+    <div class="hero-showcase-spotlight"></div>
+    <div class="hero-cats-scene-inner" id="hero-cats-scene-inner">
+    <div class="hero-showcase-beams"><span></span><span></span><span></span></div>
+    <div class="hero-bottle-showcase" aria-hidden="true">
+    <div class="hero-bottle-glow"></div>
+    <div class="hero-bottle-cap"></div>
+    <div class="hero-bottle-neck"></div>
+    <div class="hero-bottle-body"></div>
+    </div>
+    <div class="hero-orbit-ring" id="hero-orbit-ring"></div>
+    <div class="hero-cats-ring" id="hero-cats-ring"></div>
+    </div>
+    </div>
+    <p class="hero-cats-hint">Gira automáticamente · Clic en una categoría para ver el catálogo</p>
+    </div>
+    </div>
+    </div>
+    </div>
+    <!-- Marquee de categorías -->
+    <div class="relative z-10 border-t border-outline-variant/50 bg-surface-container-lowest/50 overflow-hidden py-4 mt-auto">
+    <div class="hero-marquee-track whitespace-nowrap">
+    <span class="inline-flex items-center gap-10 px-5 font-label-sm uppercase tracking-[0.25em] text-[11px] text-on-surface-variant">
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">liquor</span> Piscos</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">wine_bar</span> Vinos</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">stars</span> Whisky</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">nightlife</span> Ron</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">local_bar</span> Licores</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">moped</span> Delivery Nacional</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">verified</span> 100% Originales</span>
+    </span>
+    <span class="inline-flex items-center gap-10 px-5 font-label-sm uppercase tracking-[0.25em] text-[11px] text-on-surface-variant" aria-hidden="true">
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">liquor</span> Piscos</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">wine_bar</span> Vinos</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">stars</span> Whisky</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">nightlife</span> Ron</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">local_bar</span> Licores</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">moped</span> Delivery Nacional</span>
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">verified</span> 100% Originales</span>
+    </span>
+    </div>
+    </div>
+    <a href="#por-que-elegirnos" class="absolute bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors hero-scroll-indicator hidden lg:flex" aria-label="Desplazarse hacia abajo">
+    <span class="font-label-sm uppercase tracking-widest text-[10px]">Descubrir más</span>
+    <span class="material-symbols-outlined">expand_more</span>
+    </a>
+    </section>
+    <!-- Por qué elegirnos: Calidad, Confianza y Delivery Nacional -->
+    <section class="relative py-section-gap border-y border-outline-variant bg-surface overflow-hidden" id="por-que-elegirnos">
+    <div class="absolute inset-0 trust-glow pointer-events-none"></div>
+    <div class="absolute top-0 right-0 w-1/2 h-full opacity-[0.04] pointer-events-none hidden lg:block" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 280%22 fill=%22%23ecc246%22%3E%3Cpath d=%22M95 10c-8 12-22 18-30 32-6 10-4 24-10 36-8 16-28 22-32 40-4 18 8 36 6 54-2 20-18 38-14 58 4 22 28 34 42 50 10 12 18 28 32 36 14 8 32 4 46 10 14 6 24 22 40 24 16 2 30-10 38-24 8-14 6-32 12-46 6-14 20-24 22-40 2-16-10-30-8-46 2-16 18-28 16-44-2-16-20-26-28-40-8-14-6-32-16-44-10-12-28-14-40-24-12-10-18-26-32-32-14-6-30 2-44 0z%22/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; background-position: center right;"></div>
+    <div class="max-w-container-max mx-auto px-gutter relative z-10">
+    <div class="text-center max-w-3xl mx-auto mb-14 lg:mb-16">
+    <span class="font-label-sm text-primary uppercase tracking-[0.35em] mb-4 block">¿Por qué CRUZARTE+?</span>
+    <h2 class="font-headline-xl text-white mb-5 leading-tight">Calidad Premium.<br class="hidden sm:block"> Confianza en Cada Entrega.</h2>
+    <p class="font-body-lg text-on-surface">Somos una licorería peruana comprometida con ofrecer solo productos de la más alta calidad. Seleccionamos cada botella con rigor y la llevamos hasta la puerta de su hogar — <strong class="text-white font-normal">en cualquier parte del Perú</strong>.</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
+    <!-- Delivery a todo el Perú — tarjeta principal -->
+    <div class="trust-card lg:col-span-7 bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
+    <div class="grid grid-cols-1 md:grid-cols-2 h-full">
+    <div class="p-8 lg:p-10 flex flex-col justify-center">
+    <div class="relative w-16 h-16 mb-6">
+    <span class="absolute inset-0 rounded-full border-2 border-primary/40 trust-pulse-ring"></span>
+    <span class="relative flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border border-primary/30">
+    <span class="material-symbols-outlined text-primary text-[32px]">moped</span>
+    </span>
+    </div>
+    <span class="font-label-sm text-primary uppercase tracking-widest text-[11px] mb-2">Cobertura Nacional</span>
+    <h3 class="font-headline-lg text-white mb-4">Delivery a Todo el Perú</h3>
+    <p class="font-body-md text-on-surface leading-relaxed mb-6">Desde Lima hasta Iquitos, Arequipa, Cusco, Piura y más. Llevamos sus bebidas favoritas con logística especializada y seguimiento de envío hasta su destino.</p>
+    <ul class="space-y-2">
+    <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+    <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+    Entrega en los 24 departamentos
+    </li>
+    <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+    <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+    Embalaje reforzado para botellas
+    </li>
+    <li class="flex items-center gap-2 text-sm text-on-surface-variant">
+    <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+    Tiempos de entrega según su zona
+    </li>
+    </ul>
+    </div>
+    <div class="relative bg-surface-container-high min-h-[220px] md:min-h-0 flex items-center justify-center p-8 border-t md:border-t-0 md:border-l border-outline-variant">
+    <svg class="w-full max-w-[240px] h-auto" viewBox="0 0 200 280" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M95 10c-8 12-22 18-30 32-6 10-4 24-10 36-8 16-28 22-32 40-4 18 8 36 6 54-2 20-18 38-14 58 4 22 28 34 42 50 10 12 18 28 32 36 14 8 32 4 46 10 14 6 24 22 40 24 16 2 30-10 38-24 8-14 6-32 12-46 6-14 20-24 22-40 2-16-10-30-8-46 2-16 18-28 16-44-2-16-20-26-28-40-8-14-6-32-16-44-10-12-28-14-40-24-12-10-18-26-32-32-14-6-30 2-44 0z" stroke="#4d4635" stroke-width="1.5" fill="rgba(236,194,70,0.06)"/>
+    <circle class="trust-map-dot" cx="72" cy="95" r="5" fill="#ecc246"/>
+    <circle class="trust-map-dot" cx="88" cy="130" r="5" fill="#ecc246"/>
+    <circle class="trust-map-dot" cx="105" cy="165" r="5" fill="#ecc246"/>
+    <circle class="trust-map-dot" cx="78" cy="200" r="5" fill="#ecc246"/>
+    <circle class="trust-map-dot" cx="115" cy="75" r="5" fill="#ecc246"/>
+    </svg>
+    <div class="absolute bottom-6 left-6 right-6 text-center">
+    <span class="inline-block bg-primary/10 border border-primary/25 text-primary font-label-sm uppercase tracking-widest text-[10px] px-4 py-2 rounded-full">Perú completo · Envíos activos</span>
+    </div>
+    </div>
+    </div>
+    </div>
+    <!-- Productos de calidad -->
+    <div class="trust-card lg:col-span-5 bg-surface-container rounded-xl border border-outline-variant p-8 lg:p-10 flex flex-col">
+    <div class="w-14 h-14 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center mb-6">
+    <span class="material-symbols-outlined text-primary text-[30px]">award_star</span>
+    </div>
+    <span class="font-label-sm text-primary uppercase tracking-widest text-[11px] mb-2">Selección Curada</span>
+    <h3 class="font-headline-md text-white mb-4">Solo Productos de Calidad</h3>
+    <p class="font-body-md text-on-surface leading-relaxed flex-grow">Trabajamos directamente con bodegas y destilerías reconocidas. Cada producto pasa por un control de autenticidad y calidad antes de llegar a nuestro catálogo.</p>
+    <div class="mt-8 pt-6 border-t border-outline-variant grid grid-cols-2 gap-4">
+    <div>
+    <p class="trust-stat-value font-headline-lg text-3xl font-bold">100%</p>
+    <p class="text-[11px] text-on-surface-variant uppercase tracking-widest mt-1">Originales</p>
+    </div>
+    <div>
+    <p class="trust-stat-value font-headline-lg text-3xl font-bold">Premium</p>
+    <p class="text-[11px] text-on-surface-variant uppercase tracking-widest mt-1">Selección</p>
+    </div>
+    </div>
+    </div>
+    <!-- Empresa confiable -->
+    <div class="trust-card lg:col-span-4 bg-surface-container rounded-xl border border-outline-variant p-7 lg:p-8">
+    <div class="w-12 h-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mb-5">
+    <span class="material-symbols-outlined text-primary text-[26px]">verified_user</span>
+    </div>
+    <h3 class="font-headline-md text-white text-lg mb-3">Empresa Confiable</h3>
+    <p class="font-body-md text-on-surface text-sm leading-relaxed">Años de experiencia en el mercado peruano. Miles de clientes satisfechos que confían en nosotros para sus compras de licores y vinos.</p>
+    </div>
+    <!-- Embalaje seguro -->
+    <div class="trust-card lg:col-span-4 bg-surface-container rounded-xl border border-outline-variant p-7 lg:p-8">
+    <div class="w-12 h-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mb-5">
+    <span class="material-symbols-outlined text-primary text-[26px]">inventory_2</span>
+    </div>
+    <h3 class="font-headline-md text-white text-lg mb-3">Embalaje Protegido</h3>
+    <p class="font-body-md text-on-surface text-sm leading-relaxed">Cada botella viaja en cajas con separadores y material de amortiguación para que llegue intacta, sin importar la distancia.</p>
+    </div>
+    <!-- Atención al cliente -->
+    <div class="trust-card lg:col-span-4 bg-surface-container rounded-xl border border-outline-variant p-7 lg:p-8">
+    <div class="w-12 h-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mb-5">
+    <span class="material-symbols-outlined text-primary text-[26px]">support_agent</span>
+    </div>
+    <h3 class="font-headline-md text-white text-lg mb-3">Atención Personalizada</h3>
+    <p class="font-body-md text-on-surface text-sm leading-relaxed">Nuestro equipo le asesora por WhatsApp para elegir el producto ideal y resolver cualquier duda sobre su pedido o envío.</p>
+    </div>
+    </div>
+    <!-- Barra de estadísticas -->
+    <div class="mt-12 lg:mt-16 pt-10 border-t border-outline-variant">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6 text-center">
+    <div>
+    <p class="trust-stat-value font-headline-xl text-4xl lg:text-5xl font-bold mb-2">24</p>
+    <p class="font-label-sm text-on-surface-variant uppercase tracking-widest text-[11px]">Departamentos</p>
+    </div>
+    <div>
+    <p class="trust-stat-value font-headline-xl text-4xl lg:text-5xl font-bold mb-2">100%</p>
+    <p class="font-label-sm text-on-surface-variant uppercase tracking-widest text-[11px]">Productos Originales</p>
+    </div>
+    <div>
+    <p class="trust-stat-value font-headline-xl text-4xl lg:text-5xl font-bold mb-2">+500</p>
+    <p class="font-label-sm text-on-surface-variant uppercase tracking-widest text-[11px]">Clientes Satisfechos</p>
+    </div>
+    <div>
+    <p class="trust-stat-value font-headline-xl text-4xl lg:text-5xl font-bold mb-2">24/7</p>
+    <p class="font-label-sm text-on-surface-variant uppercase tracking-widest text-[11px]">Atención por WhatsApp</p>
+    </div>
+    </div>
+    </div>
+    <div class="text-center mt-12">
+    <a class="inline-flex items-center gap-3 bg-primary text-on-primary px-10 py-5 font-label-sm uppercase tracking-widest hover:bg-primary-container transition-colors" href="#" onclick="abrirCatalogo(event)">
+    Explorar Nuestro Catálogo
+    <span class="material-symbols-outlined">arrow_forward</span>
+    </a>
+    </div>
+    </div>
+    </section>
+    <!-- Productos Más Vendidos: Carrusel -->
+    <section class="py-section-gap bg-surface-container-low" id="mas-vendidos">
+    <div class="max-w-container-max mx-auto px-gutter">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12">
+    <div>
+    <span class="font-label-sm text-primary uppercase tracking-[0.3em] mb-3 block">Lo más pedido</span>
+    <h2 class="font-headline-md text-white border-l-4 border-primary pl-6">Productos Más Vendidos</h2>
+    <p class="font-body-md text-on-surface mt-4 max-w-xl pl-6">Los favoritos de nuestros clientes. Destilados y vinos peruanos con la mayor demanda en CRUZARTE+.</p>
+    </div>
+    <div class="flex items-center gap-3 sm:shrink-0 pl-6 sm:pl-0">
+    <button id="bestsellers-prev" type="button" aria-label="Producto anterior" class="w-12 h-12 flex items-center justify-center border border-outline-variant rounded-lg text-on-surface hover:border-primary hover:text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none">
+    <span class="material-symbols-outlined">chevron_left</span>
+    </button>
+    <button id="bestsellers-next" type="button" aria-label="Producto siguiente" class="w-12 h-12 flex items-center justify-center border border-outline-variant rounded-lg text-on-surface hover:border-primary hover:text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none">
+    <span class="material-symbols-outlined">chevron_right</span>
+    </button>
+    </div>
+    </div>
+    <div id="bestsellers-viewport" class="relative">
+    <div id="bestsellers-track"></div>
+    </div>
+    <div id="bestsellers-dots" class="flex justify-center gap-2 mt-10"></div>
+    <div class="text-center mt-10">
+    <a class="inline-flex items-center gap-2 font-label-sm uppercase tracking-widest text-primary hover:text-primary-container transition-colors" href="#" onclick="abrirCatalogo(event)">
+    Ver catálogo completo
+    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+    </a>
+    </div>
+    </div>
+    </section>
+    <!-- Categorías 3D Interactivas -->
+    <section class="py-section-gap bg-surface-container-lowest overflow-hidden" id="categorias">
+    <div class="max-w-container-max mx-auto px-gutter">
+    <div class="text-center max-w-2xl mx-auto mb-10">
+    <span class="font-label-sm text-primary uppercase tracking-[0.3em] mb-3 block">Nuestra Colección</span>
+    <h2 class="font-headline-md text-white mb-4">Explorar por Categoría</h2>
+    <p class="font-body-md text-on-surface">Gire el carrusel 3D, elija su categoría y acceda directamente al catálogo filtrado.</p>
+    </div>
+    <div class="relative">
+    <div class="cat-3d-glow"></div>
+    <div class="cat-3d-stage" id="cat-3d-stage">
+    <div class="cat-3d-ring" id="cat-3d-ring"></div>
+    </div>
+    <div class="cat-3d-reflection hidden sm:block"></div>
+    <div class="flex items-center justify-center gap-4 mt-6">
+    <button type="button" id="cat-3d-prev" aria-label="Categoría anterior" class="w-12 h-12 flex items-center justify-center border border-outline-variant rounded-lg text-on-surface hover:border-primary hover:text-primary transition-colors">
+    <span class="material-symbols-outlined">chevron_left</span>
+    </button>
+    <div id="cat-3d-dots" class="flex gap-2"></div>
+    <button type="button" id="cat-3d-next" aria-label="Categoría siguiente" class="w-12 h-12 flex items-center justify-center border border-outline-variant rounded-lg text-on-surface hover:border-primary hover:text-primary transition-colors">
+    <span class="material-symbols-outlined">chevron_right</span>
+    </button>
+    </div>
+    <p id="cat-3d-hint" class="text-center font-label-sm text-on-surface-variant uppercase tracking-widest text-[11px] mt-6">Arrastre o use las flechas · Clic para ver el catálogo</p>
+    </div>
+    </div>
+    </section>
+    <!-- Testimonios -->
+    <section class="py-section-gap bg-surface-container-lowest" id="testimonios">
+    <div class="max-w-container-max mx-auto px-gutter">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+    <h2 class="font-headline-xl text-white mb-4">Lo Que Dicen Nuestros Clientes</h2>
+    <p class="font-body-lg text-on-surface">Conocedores y coleccionistas de toda la región confían en CRUZARTE+ para sus piscos y vinos de mesa.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="bg-surface-container rounded-lg border border-outline-variant p-8 flex flex-col">
+    <div class="flex gap-1 text-primary mb-4">
+    <span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span>
+    </div>
+    <p class="font-body-md text-on-surface mb-6 flex-grow">El empaque llegó impecable y el Acholado Centenario superó mis expectativas. Se nota la calidad desde la primera copa.</p>
+    <div>
+    <p class="font-label-sm text-white">María F.</p>
+    <p class="text-[11px] text-on-surface-variant uppercase tracking-widest">Lima, Perú</p>
+    </div>
+    </div>
+    <div class="bg-surface-container rounded-lg border border-outline-variant p-8 flex flex-col">
+    <div class="flex gap-1 text-primary mb-4">
+    <span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span>
+    </div>
+    <p class="font-body-md text-on-surface mb-6 flex-grow">Pedí varias botellas para un evento corporativo y el equipo de sommelier me ayudó a armar el maridaje perfecto. Servicio impecable.</p>
+    <div>
+    <p class="font-label-sm text-white">Jorge T.</p>
+    <p class="text-[11px] text-on-surface-variant uppercase tracking-widest">Santiago, Chile</p>
+    </div>
+    </div>
+    <div class="bg-surface-container rounded-lg border border-outline-variant p-8 flex flex-col">
+    <div class="flex gap-1 text-primary mb-4">
+    <span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span><span class="material-symbols-outlined">star</span>
+    </div>
+    <p class="font-body-md text-on-surface mb-6 flex-grow">Soy coleccionista y el código QR de autenticidad me dio total confianza en la procedencia de cada botella.</p>
+    <div>
+    <p class="font-label-sm text-white">Andrea V.</p>
+    <p class="text-[11px] text-on-surface-variant uppercase tracking-widest">Bogotá, Colombia</p>
+    </div>
+    </div>
+    </div>
+    </div>
+    </section>
+    <!-- FAQ -->
+    <section class="py-section-gap bg-surface" id="preguntas-frecuentes">
+    <div class="max-w-3xl mx-auto px-gutter">
+    <h2 class="font-headline-xl text-white mb-12 text-center">Preguntas Frecuentes</h2>
+    <div class="space-y-4">
+    <div class="border border-outline-variant rounded-lg overflow-hidden">
+    <button class="faq-toggle w-full flex justify-between items-center px-6 py-5 text-left bg-surface-container hover:bg-surface-container-high transition-colors" aria-expanded="false">
+    <span class="font-label-sm text-white uppercase tracking-wide">¿A qué países realizan envíos?</span>
+    <span class="material-symbols-outlined faq-icon text-primary transition-transform">expand_more</span>
+    </button>
+    <div class="faq-panel">
+    <p class="font-body-md text-on-surface px-6 pb-5">Enviamos a la mayoría de países de Latinoamérica y a Estados Unidos. El tiempo de entrega y los costos varían según el destino; estos se calculan al finalizar la compra.</p>
+    </div>
+    </div>
+    <div class="border border-outline-variant rounded-lg overflow-hidden">
+    <button class="faq-toggle w-full flex justify-between items-center px-6 py-5 text-left bg-surface-container hover:bg-surface-container-high transition-colors" aria-expanded="false">
+    <span class="font-label-sm text-white uppercase tracking-wide">¿Cómo protegen las botellas durante el envío?</span>
+    <span class="material-symbols-outlined faq-icon text-primary transition-transform">expand_more</span>
+    </button>
+    <div class="faq-panel">
+    <p class="font-body-md text-on-surface px-6 pb-5">Cada botella se empaca individualmente en cajas con separadores rígidos y relleno protector, diseñadas específicamente para productos frágiles de exportación.</p>
+    </div>
+    </div>
+    <div class="border border-outline-variant rounded-lg overflow-hidden">
+    <button class="faq-toggle w-full flex justify-between items-center px-6 py-5 text-left bg-surface-container hover:bg-surface-container-high transition-colors" aria-expanded="false">
+    <span class="font-label-sm text-white uppercase tracking-wide">¿Aceptan devoluciones?</span>
+    <span class="material-symbols-outlined faq-icon text-primary transition-transform">expand_more</span>
+    </button>
+    <div class="faq-panel">
+    <p class="font-body-md text-on-surface px-6 pb-5">Aceptamos devoluciones de productos sin abrir dentro de los 15 días posteriores a la entrega. Por razones sanitarias, no se aceptan devoluciones de botellas abiertas.</p>
+    </div>
+    </div>
+    <div class="border border-outline-variant rounded-lg overflow-hidden">
+    <button class="faq-toggle w-full flex justify-between items-center px-6 py-5 text-left bg-surface-container hover:bg-surface-container-high transition-colors" aria-expanded="false">
+    <span class="font-label-sm text-white uppercase tracking-wide">¿Tienen descuentos para compras de eventos o por volumen?</span>
+    <span class="material-symbols-outlined faq-icon text-primary transition-transform">expand_more</span>
+    </button>
+    <div class="faq-panel">
+    <p class="font-body-md text-on-surface px-6 pb-5">Sí. Para pedidos corporativos, bodas o eventos, contáctenos directamente y nuestro equipo de sommelier le preparará una cotización con precios preferenciales.</p>
+    </div>
+    </div>
+    </div>
+    </div>
+    </section>
+    <!-- Newsletter: Modern & Clean -->
+    <section class="py-section-gap bg-surface-bright" id="suscripcion">
+    <div class="max-w-3xl mx-auto px-gutter text-center">
+    <span class="material-symbols-outlined text-primary text-[48px] mb-6">mail</span>
+    <h2 class="font-headline-xl text-white mb-4">Membresía Cruzarte+</h2>
+    <p class="font-body-lg text-on-surface mb-10">Suscríbase para recibir noticias de nuevas añadas, eventos de cata privados y descuentos exclusivos para miembros.</p>
+    <form class="flex flex-col sm:flex-row gap-0 rounded-lg overflow-hidden border border-outline">
+    <input class="flex-grow bg-surface-container px-8 py-5 text-white border-none focus:ring-2 focus:ring-primary placeholder:text-on-surface-variant font-body-md" placeholder="Su correo electrónico" required="" type="email">
+    <button class="bg-primary text-on-primary px-10 py-5 font-label-sm uppercase tracking-widest hover:bg-primary-container transition-colors whitespace-nowrap">
+                        Suscribirse
+                    </button>
+    </form>
+    <p class="mt-6 text-[11px] text-on-surface-variant uppercase tracking-widest opacity-70">
+                    Respetamos su privacidad. Cancele en cualquier momento.
+                </p>
+    </div>
+    </section>
+    
+    <!-- Catálogo: sección oculta que NO aparece en la pantalla principal, solo se muestra al hacer clic en "ver Catálogo" -->
+    <div id="catalogo-overlay" class="fixed inset-0 z-[90] bg-background overflow-y-auto">
+    <header class="sticky top-0 w-full z-50 bg-background/95 backdrop-blur-md border-b border-outline-variant">
+    <nav class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
+    <a href="#inicio" onclick="irAlInicio(event)" class="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary hover:text-primary-container transition-colors">CRUZARTE+</a>
+    <span class="font-label-sm uppercase text-[11px] tracking-widest text-primary border-b-2 border-primary pb-1">Catálogo Completo</span>
+    <button onclick="cerrarCatalogo()" class="flex items-center gap-2 text-on-surface hover:text-primary transition-colors font-label-sm uppercase tracking-widest">
+    <span class="material-symbols-outlined">close</span> Cerrar
+    </button>
+    </nav>
+    </header>
+    <div class="max-w-container-max mx-auto px-gutter py-16 pb-32">
+    <div class="mb-14">
+    <h1 class="text-white font-headline-xl mb-3">Catálogo Completo CRUZARTE+</h1>
+    <p class="text-on-surface font-body-lg max-w-2xl">Explore toda nuestra colección de Piscos, Vinos y Licores de autor, directamente desde los mejores valles del Perú.</p>
+    </div>
+    <!-- Filtros de categoría -->
+    <div class="flex flex-wrap gap-3 mb-10" id="catalogo-filtros">
+    <button data-cat="todos" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Todos</button>
+    <button data-cat="pisco" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Piscos</button>
+    <button data-cat="vino" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Vinos</button>
+    <button data-cat="Ron" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Ron</button>
+    <button data-cat="Wisky" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Wisky</button>
+
+    </div>
+    
+
+    <!-- Subcategorías de Vinos (solo visibles al filtrar por Vinos) -->
+    <div class="flex flex-wrap gap-3 mb-10 hidden" id="vino-subfiltros">
+    <button data-subcat="todos" class="vino-sub-btn px-5 py-2 font-label-sm uppercase tracking-widest rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors text-[11px]">Todos los Vinos</button>
+    <button data-subcat="tinto" class="vino-sub-btn px-5 py-2 font-label-sm uppercase tracking-widest rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors text-[11px]">Tintos</button>
+    <button data-subcat="blanco" class="vino-sub-btn px-5 py-2 font-label-sm uppercase tracking-widest rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors text-[11px]">Blancos</button>
+    <button data-subcat="rosado" class="vino-sub-btn px-5 py-2 font-label-sm uppercase tracking-widest rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors text-[11px]">Rosados</button>
+    <button data-subcat="espumante" class="vino-sub-btn px-5 py-2 font-label-sm uppercase tracking-widest rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors text-[11px]">Espumantes</button>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="catalogo-grid"></div>
+    </div>
+    <!-- Lo que llevas: fijo en esquina inferior derecha -->
+    <aside id="cart-float" aria-live="polite">
+    <div class="cart-float-box">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant/60 bg-surface-container-high/80 cursor-pointer" onclick="toggleCartFloatMin()">
+    <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-primary text-[22px]">shopping_bag</span>
+    <span class="font-label-sm text-white uppercase tracking-widest text-[10px]">Lo que llevas</span>
+    <span id="cart-float-badge" class="bg-primary text-on-primary text-[10px] font-bold min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center">0</span>
+    </div>
+    <button type="button" onclick="event.stopPropagation(); toggleCartFloatMin()" class="text-on-surface-variant hover:text-primary p-1 transition-colors" aria-label="Minimizar o expandir">
+    <span class="material-symbols-outlined text-[20px]" id="cart-float-min-icon">expand_more</span>
+    </button>
+    </div>
+    <div class="cart-float-body">
+    <div id="cart-float-items" class="cart-float-items"></div>
+    <div class="cart-float-total-wrap px-4 py-2 border-t border-outline-variant/40 bg-surface-container-high/50">
+    <div class="flex justify-between items-center">
+    <span class="text-on-surface-variant text-[10px] uppercase tracking-widest">Total</span>
+    <span id="cart-float-total" class="text-primary font-label-sm text-sm">S/ 0.00</span>
+    </div>
+    </div>
+    <div class="cart-float-wa-wrap px-3 pb-3 pt-2">
+    <button type="button" id="cart-float-wa" onclick="comprarCarritoWhatsApp()" disabled class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-3 font-label-sm uppercase tracking-widest text-[10px] hover:bg-primary-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed rounded">
+    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-1.746-.873-2.888-1.557-4.035-3.53-.305-.526.305-.488.873-1.624.099-.198.05-.371-.05-.52-.099-.148-.669-1.611-.916-2.158-.246-.547-.495-.471-.67-.471-.173 0-.371-.025-.57-.025-.198 0-.52.075-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.057 3.133 5.06 4.27 2.502.922 3.011.74 3.555.694.544-.05 1.758-.717 2.005-1.413.247-.694.247-1.29.173-1.413-.075-.124-.272-.198-.57-.347z"></path><path d="M12.012 2.001c-5.522 0-9.998 4.476-9.998 9.998 0 1.948.557 3.766 1.521 5.301L2 22l4.85-1.501a9.953 9.953 0 0 0 5.162 1.452c5.522 0 9.998-4.476 9.998-9.998s-4.476-9.952-9.998-9.952zm0 18.099a8.094 8.094 0 0 1-4.347-1.255l-.312-.198-3.067.948.978-2.99-.208-.322a8.063 8.063 0 0 1-1.252-4.336c0-4.46 3.633-8.094 8.094-8.094 4.46 0 8.094 3.633 8.094 8.094 0 4.461-3.633 8.094-8.094 8.094z"></path></svg>
+    Comprar por WhatsApp
+    </button>
+    </div>
+    </div>
+    </div>
+    </aside>
+    <footer class="border-t border-outline-variant py-10 text-center text-[10px] text-on-surface-variant uppercase tracking-[0.2em]">
+    © 2024 CRUZARTE+. TODOS LOS DERECHOS RESERVADOS. — BEBER EN EXCESO ES DAÑINO.
+    </footer>
+    </div>
+    </main>
+    <footer class="bg-surface-container-lowest border-t border-outline-variant py-16">
+    <div class="max-w-container-max mx-auto px-gutter">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+    <div class="col-span-1 md:col-span-1">
+    <a href="#inicio" onclick="irAlInicio(event)" class="font-headline-md text-primary mb-6 inline-block hover:text-primary-container transition-colors">CRUZARTE+</a>
+    <p class="text-on-surface text-sm leading-relaxed mb-6">Elevando el estándar de los destilados peruanos para el mundo entero.</p>
+    <div class="flex gap-4"><a href="#" class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface hover:border-primary hover:text-primary transition-colors" aria-label="Instagram"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"></path></svg></a><a href="#" class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface hover:border-primary hover:text-primary transition-colors" aria-label="Facebook"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z"></path></svg></a><a href="#" class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface hover:border-primary hover:text-primary transition-colors" aria-label="TikTok"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.525.02c1.31 0 2.591.214 3.75.606V5.32c-1.027-.304-2.13-.463-3.25-.463-.343 0-.68.015-1.011.044v12.409c0 2.62-2.122 4.746-4.738 4.746-2.617 0-4.739-2.126-4.739-4.746 0-2.62 2.122-4.746 4.739-4.746.32 0 .63.034.929.093v4.233c-.302-.115-.629-.18-.929-.18-1.326 0-2.401 1.075-2.401 2.4 0 1.325 1.075 2.4 2.401 2.4 1.327 0 2.402-1.075 2.402-2.4V0h2.847c.568 3.913 3.911 6.938 7.948 6.938v-4.235c-2.047 0-3.849-1.242-4.651-3.023h-2.847z"></path></svg></a></div>
+    </div>
+    <div>
+    <h5 class="font-label-sm text-white uppercase mb-6">Tienda</h5>
+    <ul class="space-y-4 text-on-surface text-sm">
+    <li class=""><a class="hover:text-primary transition-colors" href="#" onclick="abrirCatalogo(event)">Todos los Piscos</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#" onclick="abrirCatalogo(event)">Vinos de Altura</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#" onclick="abrirCatalogo(event)">Licores Especiales</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#" onclick="abrirCatalogo(event)">Ofertas</a></li>
+    </ul>
+    </div>
+    <div>
+    <h5 class="font-label-sm text-white uppercase mb-6">Compañía</h5>
+    <ul class="space-y-4 text-on-surface text-sm">
+    <li class=""><a class="hover:text-primary transition-colors" href="#testimonios">Opiniones de Clientes</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#">Sostenibilidad</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#">Blog de Catas</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#">Contacto</a></li>
+    </ul>
+    </div>
+    <div>
+    <h5 class="font-label-sm text-white uppercase mb-6">Soporte</h5>
+    <ul class="space-y-4 text-on-surface text-sm">
+    <li class=""><a class="hover:text-primary transition-colors" href="#preguntas-frecuentes">Preguntas Frecuentes</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#">Envíos y Devoluciones</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#">Términos de Servicio</a></li>
+    <li class=""><a class="hover:text-primary transition-colors" href="#">Política de Privacidad</a></li>
+    </ul>
+    </div>
+    </div>
+    <div class="pt-8 border-t border-outline-variant flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-on-surface-variant uppercase tracking-[0.2em]">
+    <span class="">© 2024 CRUZARTE+. TODOS LOS DERECHOS RESERVADOS.</span>
+    <span class="">BEBER EN EXCESO ES DAÑINO.</span>
+    </div>
+    </div>
+    </footer>
+    <script>
+        // Age gate
+        (function () {
+            var confirmBtn = document.getElementById('age-confirm');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function () {
+                    document.body.classList.add('age-verified');
+                    document.body.classList.remove('age-locked');
+                });
+            }
+        })();
+    
+        // Smooth scroll and active states
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    
+        // Button interactions for feedback
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => btn.classList.add('scale-95'));
+            btn.addEventListener('mouseup', () => btn.classList.remove('scale-95'));
+            btn.addEventListener('mouseleave', () => btn.classList.remove('scale-95'));
+        });
+    
+        // FAQ accordion
+        document.querySelectorAll('.faq-toggle').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const panel = this.nextElementSibling;
+                const isOpen = this.getAttribute('aria-expanded') === 'true';
+                this.setAttribute('aria-expanded', String(!isOpen));
+                panel.style.maxHeight = isOpen ? '0px' : panel.scrollHeight + 'px';
+            });
+        });
+    
+        // Catálogo: abrir/cerrar sección (no visible en la pantalla principal)
+        function abrirCatalogo(e, categoria) {
+            if (e) e.preventDefault();
+            if (categoria) {
+                filtroActivo = categoria;
+                if (filtroActivo !== 'vino') subFiltroActivo = 'todos';
+                actualizarBotonesFiltro();
+                renderCatalogo();
+            }
+            document.body.classList.add('catalog-open');
+            document.getElementById('catalogo-overlay').scrollTop = 0;
+            sincronizarCarritoUI();
+        }
+        function cerrarCatalogo() {
+            document.body.classList.remove('catalog-open');
+        }
+        function irAlInicio(e) {
+            if (e) e.preventDefault();
+            cerrarCatalogo();
+            const inicio = document.getElementById('inicio');
+            if (inicio) inicio.scrollIntoView({ behavior: 'smooth' });
+            else window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                cerrarCatalogo();
+                cerrarCarrito();
+            }
+        });
+    
+        // Datos y render del catálogo
+    
+        // ⬇️ CAMBIA AQUÍ el número de WhatsApp del negocio (código de país + número, sin "+" ni espacios)
+        const NUMERO_WHATSAPP = "51989321912"; // ejemplo: Perú +51 987654321
+    
+        const CARRITO_STORAGE_KEY = 'cruzarte_carrito';
+        let carrito = [];
+    
+        function cargarCarrito() {
+            try {
+                const guardado = localStorage.getItem(CARRITO_STORAGE_KEY);
+                carrito = guardado ? JSON.parse(guardado) : [];
+                if (!Array.isArray(carrito)) carrito = [];
+            } catch (e) {
+                carrito = [];
+            }
+        }
+    
+        function guardarCarrito() {
+            localStorage.setItem(CARRITO_STORAGE_KEY, JSON.stringify(carrito));
+        }
+    
+        function construirEnlaceWhatsApp(producto, cantidad) {
+            const mensaje = `Hola, estoy interesado en comprar:\n*${producto.nombre}* (${producto.precio})\nCantidad: ${cantidad}\n\n¿Podrían darme más información?\n\nImagen del producto: ${producto.img}`;
+            return `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+        }
+    
+        function construirEnlaceWhatsAppCarrito() {
+            if (carrito.length === 0) return '#';
+            let mensaje = 'Hola, quiero realizar el siguiente pedido en CRUZARTE+:\n\n';
+            carrito.forEach(function (item, i) {
+                const p = productosCatalogo.find(function (x) { return x.id === item.id; });
+                if (p) {
+                    mensaje += (i + 1) + '. *' + p.nombre + '*\n';
+                    mensaje += '   Precio: ' + p.precio + ' × ' + item.cantidad + ' unidad(es)\n';
+                    mensaje += '   Subtotal: ' + subtotalLinea(p.precio, item.cantidad) + '\n\n';
+                }
+            });
+            mensaje += '━━━━━━━━━━━━━━━━\n';
+            mensaje += '*TOTAL: ' + calcularTotalCarrito() + '*\n';
+            mensaje += '━━━━━━━━━━━━━━━━\n\n';
+            mensaje += '¿Podrían confirmarme disponibilidad?\n\n¡Gracias!';
+            return 'https://wa.me/' + NUMERO_WHATSAPP + '?text=' + encodeURIComponent(mensaje);
+        }
+    
+        function totalUnidadesCarrito() {
+            return carrito.reduce(function (sum, item) { return sum + item.cantidad; }, 0);
+        }
+    
+        function parsePrecioNumero(precioStr) {
+            const m = String(precioStr).replace(/,/g, '').match(/[\d.]+/);
+            return m ? parseFloat(m[0]) : 0;
+        }
+    
+        function subtotalLinea(precio, cantidad) {
+            const n = parsePrecioNumero(precio) * cantidad;
+            if (String(precio).indexOf('S/') !== -1) return 'S/ ' + n.toFixed(2);
+            if (String(precio).indexOf('$') !== -1) return '$' + n.toFixed(2);
+            return n.toFixed(2);
+        }
+    
+        function calcularTotalCarrito() {
+            let totalSoles = 0;
+            let totalUsd = 0;
+            let tieneSoles = false;
+            let tieneUsd = false;
+            carrito.forEach(function (item) {
+                const p = productosCatalogo.find(function (x) { return x.id === item.id; });
+                if (!p) return;
+                const n = parsePrecioNumero(p.precio) * item.cantidad;
+                if (String(p.precio).indexOf('S/') !== -1) {
+                    totalSoles += n;
+                    tieneSoles = true;
+                } else if (String(p.precio).indexOf('$') !== -1) {
+                    totalUsd += n;
+                    tieneUsd = true;
+                }
+            });
+            if (tieneSoles && !tieneUsd) return 'S/ ' + totalSoles.toFixed(2);
+            if (tieneUsd && !tieneSoles) return '$' + totalUsd.toFixed(2);
+            if (tieneSoles && tieneUsd) {
+                return 'S/ ' + totalSoles.toFixed(2) + ' + $' + totalUsd.toFixed(2);
+            }
+            return 'S/ 0.00';
+        }
+    
+        function actualizarContadorCarrito() {
+            const total = totalUnidadesCarrito();
+            const countEl = document.getElementById('cart-count');
+            const badgeEl = document.getElementById('cart-badge');
+            const floatBadge = document.getElementById('cart-float-badge');
+            if (countEl) countEl.textContent = total;
+            if (badgeEl) {
+                badgeEl.textContent = total;
+                badgeEl.classList.toggle('hidden', total === 0);
+            }
+            if (floatBadge) floatBadge.textContent = total;
+        }
+    
+        function renderCarritoFlotante(destacarId) {
+            const floatEl = document.getElementById('cart-float');
+            const container = document.getElementById('cart-float-items');
+            const waBtn = document.getElementById('cart-float-wa');
+            const totalEl = document.getElementById('cart-float-total');
+            if (!floatEl || !container) return;
+    
+            const total = totalUnidadesCarrito();
+            floatEl.classList.toggle('has-items', total > 0);
+    
+            if (total === 0) {
+                container.innerHTML = '<p class="text-on-surface-variant text-center text-[11px] py-6 px-4 leading-relaxed">Agrega productos y aparecerán aquí.</p>';
+                if (waBtn) waBtn.disabled = true;
+                if (totalEl) totalEl.textContent = 'S/ 0.00';
+                return;
+            }
+    
+            if (waBtn) waBtn.disabled = false;
+            if (totalEl) totalEl.textContent = calcularTotalCarrito();
+            container.innerHTML = '';
+            carrito.forEach(function (item) {
+                const p = productosCatalogo.find(function (x) { return x.id === item.id; });
+                if (!p) return;
+                const row = document.createElement('div');
+                row.className = 'cart-float-item' + (item.id === destacarId ? ' is-new' : '');
+                row.innerHTML = `
+                    <div class="w-9 h-9 shrink-0 bg-surface-bright rounded flex items-center justify-center p-0.5">
+                        <img alt="" class="max-h-full max-w-full object-contain" src="${p.img}">
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <p class="text-white text-[10px] font-medium leading-tight line-clamp-2">${p.nombre}</p>
+                        <p class="text-on-surface-variant text-[9px] mt-0.5">${p.precio} c/u</p>
+                        <p class="text-primary text-[10px] font-semibold mt-0.5">${subtotalLinea(p.precio, item.cantidad)}</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-1 shrink-0">
+                        <div class="cart-float-qty">
+                            <button type="button" onclick="cambiarCantidadCarrito(${p.id}, -1)" aria-label="Menos">−</button>
+                            <input type="number" class="cart-float-qty-input" value="${item.cantidad}" min="1" max="${p.stock}"
+                                aria-label="Cantidad"
+                                onchange="setCantidadCarrito(${p.id}, this.value)"
+                                onclick="event.stopPropagation()">
+                            <button type="button" onclick="cambiarCantidadCarrito(${p.id}, 1)" aria-label="Más">+</button>
+                        </div>
+                        <button type="button" onclick="eliminarDelCarrito(${p.id})" class="text-on-surface-variant hover:text-red-400 text-[9px] uppercase tracking-wide transition-colors" aria-label="Quitar">Quitar</button>
+                    </div>`;
+                container.appendChild(row);
+            });
+    
+            if (destacarId) {
+                setTimeout(function () {
+                    container.querySelectorAll('.cart-float-item.is-new').forEach(function (el) {
+                        el.classList.remove('is-new');
+                    });
+                }, 700);
+            }
+        }
+    
+        function toggleCartFloatMin() {
+            const floatEl = document.getElementById('cart-float');
+            const icon = document.getElementById('cart-float-min-icon');
+            if (!floatEl) return;
+            floatEl.classList.toggle('is-minimized');
+            if (icon) icon.textContent = floatEl.classList.contains('is-minimized') ? 'expand_less' : 'expand_more';
+        }
+    
+        function sincronizarCarritoUI(destacarId) {
+            actualizarContadorCarrito();
+            renderCarritoFlotante(destacarId);
+            if (document.body.classList.contains('cart-open')) renderCarrito();
+        }
+    
+        function mostrarToastCarrito(msg) {
+            const toast = document.getElementById('cart-toast');
+            const msgEl = document.getElementById('cart-toast-msg');
+            if (!toast) return;
+            if (msgEl) msgEl.textContent = msg || 'Agregado al carrito';
+            toast.classList.add('is-visible');
+            clearTimeout(mostrarToastCarrito._timer);
+            mostrarToastCarrito._timer = setTimeout(function () {
+                toast.classList.remove('is-visible');
+            }, 2200);
+        }
+    
+        function renderCarrito() {
+            const container = document.getElementById('carrito-items');
+            const totalEl = document.getElementById('carrito-total-unidades');
+            const waBtn = document.getElementById('carrito-wa-btn');
+            if (!container) return;
+    
+            if (carrito.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-16">
+                        <span class="material-symbols-outlined text-on-surface-variant text-[48px] mb-4 block opacity-50">shopping_cart</span>
+                        <p class="text-on-surface-variant font-body-md">Su carrito está vacío</p>
+                        <button type="button" onclick="cerrarCarrito(); abrirCatalogo(null);" class="mt-6 text-primary font-label-sm uppercase tracking-widest text-[11px] hover:underline">
+                            Ver catálogo
+                        </button>
+                    </div>`;
+                if (totalEl) totalEl.textContent = '0';
+                if (waBtn) waBtn.disabled = true;
+                return;
+            }
+    
+            container.innerHTML = '';
+            carrito.forEach(function (item) {
+                const p = productosCatalogo.find(function (x) { return x.id === item.id; });
+                if (!p) return;
+                const row = document.createElement('div');
+                row.className = 'flex gap-4 bg-surface-container-high border border-outline-variant rounded-lg p-3';
+                row.innerHTML = `
+                    <div class="w-16 h-16 shrink-0 bg-surface-bright rounded flex items-center justify-center p-1">
+                        <img alt="${p.nombre}" class="max-h-full max-w-full object-contain" src="${p.img}">
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <p class="text-white text-sm font-medium leading-snug line-clamp-2">${p.nombre}</p>
+                        <p class="text-primary font-label-sm mt-1">${p.precio}</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <button type="button" onclick="cambiarCantidadCarrito(${p.id}, -1)" class="w-7 h-7 flex items-center justify-center border border-outline-variant rounded text-on-surface hover:border-primary hover:text-primary transition-colors" aria-label="Reducir cantidad">−</button>
+                            <span class="text-white text-sm min-w-[24px] text-center">${item.cantidad}</span>
+                            <button type="button" onclick="cambiarCantidadCarrito(${p.id}, 1)" class="w-7 h-7 flex items-center justify-center border border-outline-variant rounded text-on-surface hover:border-primary hover:text-primary transition-colors" aria-label="Aumentar cantidad">+</button>
+                        </div>
+                    </div>
+                    <button type="button" onclick="eliminarDelCarrito(${p.id})" class="text-on-surface-variant hover:text-red-400 transition-colors shrink-0 self-start" aria-label="Eliminar producto">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                    </button>`;
+                container.appendChild(row);
+            });
+    
+            if (totalEl) totalEl.textContent = String(totalUnidadesCarrito());
+            if (waBtn) waBtn.disabled = false;
+            renderCarritoFlotante();
+        }
+    
+        function abrirCarrito() {
+            renderCarrito();
+            document.body.classList.add('cart-open');
+        }
+    
+        function cerrarCarrito() {
+            document.body.classList.remove('cart-open');
+        }
+    
+        function agregarAlCarrito(id, cantidadDirecta) {
+            const producto = productosCatalogo.find(function (p) { return p.id === id; });
+            if (!producto || producto.stock <= 0) return;
+    
+            let cantidad = cantidadDirecta;
+            if (cantidad == null) {
+                const select = document.getElementById('cantidad-' + id);
+                cantidad = select ? parseInt(select.value, 10) : 1;
+            }
+            cantidad = Math.max(1, cantidad || 1);
+    
+            const existente = carrito.find(function (item) { return item.id === id; });
+            const enCarrito = existente ? existente.cantidad : 0;
+            if (enCarrito + cantidad > producto.stock) {
+                mostrarToastCarrito('Stock máximo: ' + producto.stock);
+                return;
+            }
+    
+            if (existente) existente.cantidad += cantidad;
+            else carrito.push({ id: id, cantidad: cantidad });
+    
+            guardarCarrito();
+            sincronizarCarritoUI(id);
+            mostrarToastCarrito('Agregado al carrito');
+            const floatEl = document.getElementById('cart-float');
+            if (floatEl) floatEl.classList.remove('is-minimized');
+        }
+    
+        function cambiarCantidadCarrito(id, delta) {
+            const producto = productosCatalogo.find(function (p) { return p.id === id; });
+            const item = carrito.find(function (i) { return i.id === id; });
+            if (!item || !producto) return;
+    
+            item.cantidad += delta;
+            if (item.cantidad <= 0) {
+                carrito = carrito.filter(function (i) { return i.id !== id; });
+            } else if (item.cantidad > producto.stock) {
+                item.cantidad = producto.stock;
+                mostrarToastCarrito('Stock máximo: ' + producto.stock);
+            }
+    
+            guardarCarrito();
+            sincronizarCarritoUI(id);
+        }
+    
+        function setCantidadCarrito(id, cantidad) {
+            const producto = productosCatalogo.find(function (p) { return p.id === id; });
+            const item = carrito.find(function (i) { return i.id === id; });
+            if (!item || !producto) return;
+    
+            cantidad = parseInt(cantidad, 10);
+            if (isNaN(cantidad) || cantidad < 1) {
+                eliminarDelCarrito(id);
+                return;
+            }
+            if (cantidad > producto.stock) {
+                cantidad = producto.stock;
+                mostrarToastCarrito('Stock máximo: ' + producto.stock);
+            }
+            item.cantidad = cantidad;
+            guardarCarrito();
+            sincronizarCarritoUI(id);
+        }
+    
+        function eliminarDelCarrito(id) {
+            carrito = carrito.filter(function (i) { return i.id !== id; });
+            guardarCarrito();
+            sincronizarCarritoUI();
+        }
+    
+        function vaciarCarrito() {
+            carrito = [];
+            guardarCarrito();
+            sincronizarCarritoUI();
+        }
+    
+        function comprarCarritoWhatsApp() {
+            if (carrito.length === 0) return;
+            window.open(construirEnlaceWhatsAppCarrito(), '_blank');
+        }
+    
+        const ICONO_CARRITO_SVG = '<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"></path></svg>';
+    
+        // ============================================================
+        // 🛒 PRODUCTOS DEL CATÁLOGO
+        // Para editar: cambia el valor después de los " : " en cada línea.
+        // No borres las comas "," al final de cada línea ni las llaves { }.
+        // categoria "cat" debe ser: "pisco", "vino" o "licor"
+        // "sub" (solo para vinos) debe ser: "tinto", "blanco", "rosado", "espumante" o "" si no aplica
+        // "masVendido: true" muestra el producto en el carrusel de más vendidos
+        // ============================================================
+        const productosCatalogo = [
+    
+            // ---------- PRODUCTO 1 Wisky ----------
+            {
+                id: 1,
+                nombre: "Johnnie Walker Red Label (750ml)",
+                categoria: "",
+                cat: "Wisky",
+                sub: "",
+                stock: 1000,                 // 👈 cambia la cantidad disponible aquí
+                precio: "S/60",     // 👈 cambia el precio aquí
+                tag: "Más Vendido",        // 👈 etiqueta visible (deja "" para ninguna)
+                masVendido: true,
+                desc: "El whisky escocés más vendido. Sabor audaz y ahumado, ideal con hielo o en cocteles",
+                img: "imagenesp/redlabel.jpg"
+            },
+    
+            // ---------- PRODUCTO 2 ----------
+            {
+                id: 2,
+                nombre: "Gran Reserva Malbec",
+                categoria: "VINO TINTO • VALLE DE MAJES",
+                cat: "vino",
+                sub: "tinto",
+                stock: 12,
+                precio: "$85.00 USD",
+                tag: "Más Vendido",
+                masVendido: true,
+                desc: "Cuerpo robusto con taninos elegantes y final persistente a frutos rojos.",
+                img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBJjqWvVIiFRznzCLAR-14n1eIaYL9yPcuoQdR0BMi_Mo8XyCN054Zy5ih9VgKQOkZWp510TpXLnQA7x_BMkjQ0gS8UD_C0m3XGzjgVHxHS65PK93-GfA47eP5IAj4RsQO1aE0M9Qh5bKYv3dsyN8cPqv7Kn742ql9sJbHDA9BQ_VN6MdLefVYD3yPNYhBpdhgK92Act6j-884rXDT6ijr2FPk_5HWUCr6mOhJ5enYhGxLtsM2SRmregwVQNetkO9fL7B4ZtBY3jiNF"
+            },
+    
+            // ---------- PRODUCTO 3 ----------
+            {
+                id: 3,
+                nombre: "Acholado Centenario",
+                categoria: "PISCO • LUNAHUANÁ",
+                cat: "pisco",
+                sub: "",
+                stock: 5,
+                precio: "$240.00 USD",
+                tag: "Edición Limitada",
+                masVendido: true,
+                desc: "Mezcla maestra de uvas selectas con 2 años de reposo en barrica.",
+                img: "imagenes/acholado-centenario.jpg"
+            },
+    
+            // ---------- PRODUCTO 4 ----------
+            {
+                id: 4,
+                nombre: "Quebranta Pura",
+                categoria: "PISCO • CAÑETE",
+                cat: "pisco",
+                sub: "",
+                stock: 24,
+                precio: "$95.00 USD",
+                tag: "Más Vendido",
+                masVendido: true,
+                desc: "Pisco puro de aroma sobrio y sabor a frutas maduras de pepa grande.",
+                img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBJjqWvVIiFRznzCLAR-14n1eIaYL9yPcuoQdR0BMi_Mo8XyCN054Zy5ih9VgKQOkZWp510TpXLnQA7x_BMkjQ0gS8UD_C0m3XGzjgVHxHS65PK93-GfA47eP5IAj4RsQO1aE0M9Qh5bKYv3dsyN8cPqv7Kn742ql9sJbHDA9BQ_VN6MdLefVYD3yPNYhBpdhgK92Act6j-884rXDT6ijr2FPk_5HWUCr6mOhJ5enYhGxLtsM2SRmregwVQNetkO9fL7B4ZtBY3jiNF"
+            },
+    
+            // ---------- PRODUCTO 5 ----------
+            {
+                id: 5,
+                nombre: "Cabernet Sauvignon Reserva",
+                categoria: "VINO TINTO • ICA",
+                cat: "vino",
+                sub: "tinto",
+                stock: 9,
+                precio: "$78.00 USD",
+                tag: "",
+                desc: "Notas de cassis y especias con un envejecimiento de 12 meses en roble francés.",
+                img: "imagenes/cabernet-sauvignon-reserva.jpg"
+            },
+    
+            // ---------- PRODUCTO 6 ----------
+            {
+                id: 6,
+                nombre: "Licor de Autor Edición Dorada",
+                categoria: "LICOR • LIMA",
+                cat: "licor",
+                sub: "",
+                stock: 7,
+                precio: "$150.00 USD",
+                tag: "Colección",
+                desc: "Elaboración artesanal en lotes pequeños con infusión de hierbas andinas.",
+                img: "imagenes/licor-edicion-dorada.jpg"
+            },
+    
+            // ---------- PRODUCTO 7 ----------
+            {
+                id: 7,
+                nombre: "Sauvignon Blanc Costa Sur",
+                categoria: "VINO BLANCO • CHINCHA",
+                cat: "vino",
+                sub: "blanco",
+                stock: 15,
+                precio: "$68.00 USD",
+                tag: "",
+                desc: "Fresco y mineral, con notas cítricas y un final crujiente ideal para mariscos.",
+                img: "imagenes/sauvignon-blanc-costa-sur.jpg"
+            },
+    
+            // ---------- PRODUCTO 8 ----------
+            {
+                id: 8,
+                nombre: "Chardonnay Barrica de Roble",
+                categoria: "VINO BLANCO • CAÑETE",
+                cat: "vino",
+                sub: "blanco",
+                stock: 10,
+                precio: "$92.00 USD",
+                tag: "",
+                desc: "Untuoso, con notas de vainilla y mantequilla por su crianza en barrica francesa.",
+                img: "imagenes/chardonnay-barrica-roble.jpg"
+            },
+    
+            // ---------- PRODUCTO 9 ----------
+            {
+                id: 9,
+                nombre: "Rosé de Verano",
+                categoria: "VINO ROSADO • ICA",
+                cat: "vino",
+                sub: "rosado",
+                stock: 20,
+                precio: "$62.00 USD",
+                tag: "Nuevo",
+                desc: "Ligero y afrutado, con aromas a fresa y un color rosa pálido elegante.",
+                img: "imagenes/rose-de-verano.jpg"
+            },
+    
+            // ---------- PRODUCTO 10 ----------
+            {
+                id: 10,
+                nombre: "Malvasía Rosado Suave",
+                categoria: "VINO ROSADO • MOQUEGUA",
+                cat: "vino",
+                sub: "rosado",
+                stock: 14,
+                precio: "$58.00 USD",
+                tag: "",
+                desc: "Semi-dulce, con notas florales y un perfil suave perfecto para brindis.",
+                img: "imagenes/malvasia-rosado-suave.jpg"
+            },
+    
+            // ---------- PRODUCTO 11 ----------
+            {
+                id: 11,
+                nombre: "Espumante Brut Nature",
+                categoria: "VINO ESPUMANTE • ICA",
+                cat: "vino",
+                sub: "espumante",
+                stock: 6,
+                precio: "$98.00 USD",
+                tag: "Edición Limitada",
+                desc: "Burbuja fina y persistente, elaborado con método tradicional sin azúcar añadida.",
+                img: "imagenes/espumante-brut-nature.jpg"
+            },
+    
+            // ---------- PRODUCTO 12 ----------
+            {
+                id: 12,
+                nombre: "Espumante Rosé Demi-Sec",
+                categoria: "VINO ESPUMANTE • TACNA",
+                cat: "vino",
+                sub: "espumante",
+                stock: 0,
+                precio: "$104.00 USD",
+                tag: "",
+                desc: "Aromas a frutos rojos y un toque dulce equilibrado, ideal para celebraciones.",
+                img: "imagenes/espumante-rose-demi-sec.jpg"
+            },
+            // ---------- PRODUCTO 13 ----------
+            {
+                id: 13,
+                nombre: "Vino LUCA Old Wine Vintage Malbec Botella 750ml",
+                categoria: "",
+                cat: "vino",
+                sub: "",
+                stock: 50,
+                precio: "S/140.00",
+                tag: "Más Vendido",
+                masVendido: true,
+                desc: "Aromas a frutos rojos y un toque dulce equilibrado, ideal para celebraciones.",
+                img: "https://licorerias.com.pe/wp-content/uploads/2026/06/LUCA-OLD-WINE-.png"
+            },
+            // ---------- PRODUCTO 14 ----------
+            {
+                id: 14,
+                nombre: "Ron CARTAVIO Black Botella 750ml",
+                categoria: "",
+                cat: "Ron",
+                sub: "",
+                stock: 50,
+                precio: "S/29.90",
+                tag: "Más Vendido",
+                masVendido: true,
+                desc: "Profundos aromas de melazas, mieles y especias dulces, de canela y vainilla,con un envolvente final de granos de café recién tostados, cacao y chocolate negro.",
+                img: "https://licoreriasunidas.pe/cdn/shop/products/21fb79e6f712438391bff427b5e48dce.webp?v=1677698170&width=500"
+
+            }
+        ]
+    
+        cargarCarrito();
+        carrito = carrito.filter(function (item) {
+            return productosCatalogo.some(function (p) { return p.id === item.id; });
+        });
+        guardarCarrito();
+        sincronizarCarritoUI();
+    
+        let filtroActivo = 'todos';
+        let subFiltroActivo = 'todos';
+    
+        function actualizarBotonesFiltro() {
+            document.querySelectorAll('.cat-filtro-btn').forEach(btn => {
+                const activo = btn.dataset.cat === filtroActivo;
+                btn.classList.toggle('bg-primary', activo);
+                btn.classList.toggle('text-on-primary', activo);
+                btn.classList.toggle('border-primary', activo);
+                btn.classList.toggle('bg-transparent', !activo);
+                btn.classList.toggle('text-on-surface', !activo);
+                btn.classList.toggle('border-outline-variant', !activo);
+            });
+            document.querySelectorAll('.vino-sub-btn').forEach(btn => {
+                const activo = btn.dataset.subcat === subFiltroActivo;
+                btn.classList.toggle('bg-primary', activo);
+                btn.classList.toggle('text-on-primary', activo);
+                btn.classList.toggle('border-primary', activo);
+                btn.classList.toggle('text-on-surface-variant', !activo);
+            });
+            document.getElementById('vino-subfiltros').classList.toggle('hidden', filtroActivo !== 'vino');
+        }
+    
+        function renderCatalogo() {
+            const grid = document.getElementById('catalogo-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            const lista = productosCatalogo.filter(p => {
+                if (filtroActivo !== 'todos' && p.cat !== filtroActivo) return false;
+                if (filtroActivo === 'vino' && subFiltroActivo !== 'todos' && p.sub !== subFiltroActivo) return false;
+                return true;
+            });
+            if (lista.length === 0) {
+                grid.innerHTML = '<p class="text-on-surface-variant col-span-full text-center py-12">No hay productos en esta categoría por el momento.</p>';
+                return;
+            }
+            lista.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "group bg-surface-container rounded-lg overflow-hidden border border-outline-variant hover:border-primary transition-colors duration-300 flex flex-col h-full";
+                const agotado = p.stock <= 0;
+                const maxCantidad = Math.min(p.stock, 20);
+                let opcionesCantidad = '';
+                for (let i = 1; i <= maxCantidad; i++) {
+                    opcionesCantidad += `<option value="${i}">${i}</option>`;
+                }
+                card.innerHTML = `
+                    <div class="aspect-square bg-surface-bright relative p-12">
+                        <img alt="${p.nombre}" class="w-full h-full object-contain ${agotado ? 'opacity-40' : ''}" src="${p.img}">
+                        ${p.tag && !agotado ? `<div class="absolute top-4 left-4 bg-primary text-on-primary px-3 py-1 font-label-sm rounded text-[10px] uppercase">${p.tag}</div>` : ''}
+                        ${agotado ? `<div class="absolute top-4 left-4 bg-surface-container-lowest border border-outline text-on-surface-variant px-3 py-1 font-label-sm rounded text-[10px] uppercase">Agotado</div>` : ''}
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="mb-4">
+                            <span class="font-label-sm text-on-surface-variant uppercase text-[10px] tracking-widest">${p.categoria}</span>
+                            <h3 class="font-headline-md text-white mt-1">${p.nombre}</h3>
+                            <p class="font-body-md text-on-surface mt-2 line-clamp-2">${p.desc}</p>
+                            <div class="mt-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[16px] ${agotado ? 'text-red-400' : 'text-primary'}">inventory_2</span>
+                                <span class="text-[11px] uppercase tracking-widest ${agotado ? 'text-red-400' : 'text-on-surface-variant'}">
+                                    ${agotado ? 'Sin stock disponible' : `Stock: ${p.stock} disponibles`}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mt-auto pt-6 border-t border-outline-variant flex flex-col gap-4">
+                            <div class="flex justify-between items-center">
+                                <span class="font-headline-md text-primary">${p.precio}</span>
+                                <div class="flex items-center gap-2">
+                                    <label for="cantidad-${p.id}" class="text-[10px] uppercase tracking-widest text-on-surface-variant">Cant.</label>
+                                    <select id="cantidad-${p.id}" ${agotado ? 'disabled' : ''} class="bg-surface-container-high border border-outline-variant text-white text-base rounded-lg px-4 py-3 min-w-[70px] focus:ring-2 focus:ring-primary focus:outline-none disabled:opacity-40">
+                                        ${agotado ? '<option value="0">0</option>' : opcionesCantidad}
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" onclick="agregarAlCarrito(${p.id})" ${agotado ? 'disabled' : ''} aria-label="Agregar al carrito" class="w-full flex items-center justify-center gap-2 ${agotado ? 'bg-surface-container-high text-on-surface-variant cursor-not-allowed' : 'bg-primary hover:bg-primary-container text-on-primary active:scale-95'} px-4 py-3 rounded-lg font-label-sm uppercase tracking-widest text-[11px] transition-colors">
+                                ${ICONO_CARRITO_SVG}
+                                ${agotado ? 'No disponible' : 'Agregar al Carrito'}
+                            </button>
+                        </div>
+                    </div>`;
+                grid.appendChild(card);
+            });
+        }
+    
+        document.querySelectorAll('.cat-filtro-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                filtroActivo = btn.dataset.cat;
+                if (filtroActivo !== 'vino') subFiltroActivo = 'todos';
+                actualizarBotonesFiltro();
+                renderCatalogo();
+            });
+        });
+        document.querySelectorAll('.vino-sub-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                subFiltroActivo = btn.dataset.subcat;
+                actualizarBotonesFiltro();
+                renderCatalogo();
+            });
+        });
+    
+        actualizarBotonesFiltro();
+        renderCatalogo();
+
+        // Hero: showcase 3D cinematográfico de categorías
+        (function initHeroCats3D() {
+            const ring = document.getElementById('hero-cats-ring');
+            const orbitRing = document.getElementById('hero-orbit-ring');
+            const scene = document.getElementById('hero-cats-scene');
+            const sceneInner = document.getElementById('hero-cats-scene-inner');
+            const particlesEl = document.getElementById('hero-showcase-particles');
+            if (!ring) return;
+
+            const categorias = [
+                {
+                    label: 'Piscos',
+                    subtitle: 'Destilados Peruanos',
+                    cat: 'pisco',
+                    icon: 'liquor',
+                    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBq8P1Pnhjc8XcZRBK_DqgJRGeu2i5OOTqubGtk3F6rMGuRkEZWJC3nNxBYHPe5ICnkITc4nSgxVUp4NQriNwZZRVFuihBnzPoM7PXFseGYjMMa223JChkbWuEgCoI4rFHgQzKODND2mzcKDqZJ_b0JuGBE3SfsSZz26WdND6nEWTVXUkD6iAyNul__3YfGPbz6KXeWmcvi5cYHvYjwbH8tqPZDu0Uk0hLC6Eq9Z7bQEc7jYx6CbMD_0mNWyF_m2D6XUc3wVzdmw6DA'
+                },
+                {
+                    label: 'Vinos',
+                    subtitle: 'Bodega & Terroir',
+                    cat: 'vino',
+                    icon: 'wine_bar',
+                    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBLUOXsziyrdLTb7bonvFh_COazrpI_h3zbFTriMxLSKCqPHLLpCEW4m1wAaegOCpv4rLat8pKLYD5_uZTDcsOWQHAyDo6IQz1Hx348HxwxHbr6JA6ker_F8GKCNcA8QOS2LOz3q_ruhvSgHWNSQQV_tBN1yDc3kPNt5PzHnoexGqIyZDLO4MFBdX5oE2MXpBQTKTDhgYCXKTnWg0O3KD88n8XbrbCgjSx1bF3ubBWfIfgtZPAt5BRtjPXcwhlD2S--cHXnc_v2PKN7'
+                },
+                {
+                    label: 'Whisky',
+                    subtitle: 'Escocia & Mundo',
+                    cat: 'Wisky',
+                    icon: 'stars',
+                    img: 'imagenesp/redlabel.jpg'
+                },
+                {
+                    label: 'Ron',
+                    subtitle: 'Añejos & Premium',
+                    cat: 'Ron',
+                    icon: 'nightlife',
+                    img: 'https://licoreriasunidas.pe/cdn/shop/products/21fb79e6f712438391bff427b5e48dce.webp?v=1677698170&width=500'
+                },
+                {
+                    label: 'Licores',
+                    subtitle: 'Ediciones de Autor',
+                    cat: 'licor',
+                    icon: 'local_bar',
+                    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnAOLzQPeHklzYhOUhN21VZyvnpFZU_RxOw7rqM_EKt_fvgOFkDbYdlaP7AEwbXGMqK-8-E_r2P9lOOwGYffoKqUY7ybT8uhj0Y_rhlRp-ER-I-AtTm-SJ4bAyT3-pb7-RRqpwBhjrJFn7fVqAX0GI2jJhV5J1qry3iD55yyG1ns0CD-ePjORGphX343xdqdeLu_f_eOJSVzNYyNOb4QIp-aX51TkrH664oLZwyrwiPl4DUb7EtMJV7jHc2u8xYwxkdWtsGvI7cIeD'
+                }
+            ];
+
+            function getRadius() {
+                return window.innerWidth < 640 ? 185 : 260;
+            }
+
+            const total = categorias.length;
+            const angleStep = 360 / total;
+            let radius = getRadius();
+            const cards = [];
+
+            categorias.forEach(function (cat, i) {
+                const angle = i * angleStep;
+                const helixY = Math.sin((i / total) * Math.PI * 2) * (window.innerWidth < 640 ? 28 : 45);
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'hero-cats-card';
+                card.dataset.index = String(i);
+                card.setAttribute('aria-label', 'Ver catálogo de ' + cat.label);
+                card.style.transform = 'rotateY(' + angle + 'deg) translateZ(' + radius + 'px) translateY(' + helixY + 'px) rotateY(-' + angle + 'deg)';
+                card.innerHTML = `
+                    <div class="hero-cats-card-inner">
+                        <div class="hero-cats-card-bg" style="background-image:url('${cat.img}')"></div>
+                        <div class="hero-cats-card-overlay"></div>
+                        <div class="hero-cats-card-shine"></div>
+                        <div class="hero-cats-card-content">
+                            <span class="hero-cats-card-num">0${i + 1}</span>
+                            <span class="material-symbols-outlined text-primary text-[36px]">${cat.icon}</span>
+                            <div>
+                                <span class="font-label-sm text-primary uppercase tracking-widest text-[9px]">${cat.subtitle}</span>
+                                <p class="text-white font-bold text-xl mt-1 leading-tight">${cat.label}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                card.addEventListener('click', function () { abrirCatalogo(null, cat.cat); });
+                ring.appendChild(card);
+                cards.push(card);
+            });
+
+            if (orbitRing) {
+                for (let d = 0; d < 8; d++) {
+                    const dot = document.createElement('span');
+                    dot.className = 'hero-orbit-dot';
+                    const orbitR = window.innerWidth < 640 ? 130 : 180;
+                    dot.style.transform = 'rotateY(' + (d * 45) + 'deg) translateZ(' + orbitR + 'px)';
+                    orbitRing.appendChild(dot);
+                }
+            }
+
+            if (particlesEl) {
+                for (let p = 0; p < 14; p++) {
+                    const particle = document.createElement('span');
+                    particle.className = 'hero-showcase-particle';
+                    particle.style.left = (8 + Math.random() * 84) + '%';
+                    particle.style.top = (10 + Math.random() * 80) + '%';
+                    particle.style.animationDelay = (Math.random() * 6) + 's';
+                    particle.style.animationDuration = (4 + Math.random() * 4) + 's';
+                    particlesEl.appendChild(particle);
+                }
+            }
+
+            function updateCardPositions() {
+                radius = getRadius();
+                const helixAmp = window.innerWidth < 640 ? 28 : 45;
+                cards.forEach(function (card, i) {
+                    const angle = i * angleStep;
+                    const helixY = Math.sin((i / total) * Math.PI * 2) * helixAmp;
+                    card.style.transform = 'rotateY(' + angle + 'deg) translateZ(' + radius + 'px) translateY(' + helixY + 'px) rotateY(-' + angle + 'deg)';
+                });
+                if (orbitRing) {
+                    const orbitR = window.innerWidth < 640 ? 130 : 180;
+                    orbitRing.querySelectorAll('.hero-orbit-dot').forEach(function (dot, d) {
+                        dot.style.transform = 'rotateY(' + (d * 45) + 'deg) translateZ(' + orbitR + 'px)';
+                    });
+                }
+            }
+
+            function updateFrontCard() {
+                const ringStyle = window.getComputedStyle(ring);
+                const matrix = ringStyle.transform;
+                if (!matrix || matrix === 'none') return;
+                const values = matrix.match(/matrix3d\(([^)]+)\)/);
+                let rotY = 0;
+                if (values) {
+                    const parts = values[1].split(',').map(parseFloat);
+                    rotY = Math.atan2(parts[8], parts[0]) * (180 / Math.PI);
+                } else {
+                    const m2 = matrix.match(/matrix\(([^)]+)\)/);
+                    if (m2) {
+                        const p = m2[1].split(',').map(parseFloat);
+                        rotY = Math.atan2(p[1], p[0]) * (180 / Math.PI);
+                    }
+                }
+                let frontIdx = 0;
+                let minDiff = Infinity;
+                cards.forEach(function (card, i) {
+                    let cardAngle = (i * angleStep + rotY) % 360;
+                    if (cardAngle < 0) cardAngle += 360;
+                    const diff = Math.min(Math.abs(cardAngle), Math.abs(360 - cardAngle));
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        frontIdx = i;
+                    }
+                });
+                cards.forEach(function (card, i) {
+                    card.classList.toggle('is-front', i === frontIdx);
+                });
+            }
+
+            window.addEventListener('resize', updateCardPositions);
+
+            if (scene && sceneInner && window.matchMedia('(pointer: fine)').matches) {
+                scene.addEventListener('mousemove', function (e) {
+                    const rect = scene.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width - 0.5;
+                    const y = (e.clientY - rect.top) / rect.height - 0.5;
+                    sceneInner.style.animation = 'none';
+                    sceneInner.style.transform = 'rotateX(' + (14 + y * -10) + 'deg) rotateY(' + (-8 + x * 14) + 'deg)';
+                });
+                scene.addEventListener('mouseleave', function () {
+                    sceneInner.style.animation = '';
+                    sceneInner.style.transform = '';
+                });
+            }
+
+            requestAnimationFrame(function tick() {
+                updateFrontCard();
+                requestAnimationFrame(tick);
+            });
+        })();
+
+        // Carrusel 3D de categorías
+        (function initCategorias3D() {
+            const categorias = [
+                {
+                    cat: 'pisco',
+                    label: 'Piscos',
+                    subtitle: 'Destilados Peruanos',
+                    icon: 'liquor',
+                    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBq8P1Pnhjc8XcZRBK_DqgJRGeu2i5OOTqubGtk3F6rMGuRkEZWJC3nNxBYHPe5ICnkITc4nSgxVUp4NQriNwZZRVFuihBnzPoM7PXFseGYjMMa223JChkbWuEgCoI4rFHgQzKODND2mzcKDqZJ_b0JuGBE3SfsSZz26WdND6nEWTVXUkD6iAyNul__3YfGPbz6KXeWmcvi5cYHvYjwbH8tqPZDu0Uk0hLC6Eq9Z7bQEc7jYx6CbMD_0mNWyF_m2D6XUc3wVzdmw6DA'
+                },
+                {
+                    cat: 'vino',
+                    label: 'Vinos',
+                    subtitle: 'Bodega & Terroir',
+                    icon: 'wine_bar',
+                    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBLUOXsziyrdLTb7bonvFh_COazrpI_h3zbFTriMxLSKCqPHLLpCEW4m1wAaegOCpv4rLat8pKLYD5_uZTDcsOWQHAyDo6IQz1Hx348HxwxHbr6JA6ker_F8GKCNcA8QOS2LOz3q_ruhvSgHWNSQQV_tBN1yDc3kPNt5PzHnoexGqIyZDLO4MFBdX5oE2MXpBQTKTDhgYCXKTnWg0O3KD88n8XbrbCgjSx1bF3ubBWfIfgtZPAt5BRtjPXcwhlD2S--cHXnc_v2PKN7'
+                },
+                {
+                    cat: 'licor',
+                    label: 'Licores',
+                    subtitle: 'Ediciones de Autor',
+                    icon: 'local_bar',
+                    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnAOLzQPeHklzYhOUhN21VZyvnpFZU_RxOw7rqM_EKt_fvgOFkDbYdlaP7AEwbXGMqK-8-E_r2P9lOOwGYffoKqUY7ybT8uhj0Y_rhlRp-ER-I-AtTm-SJ4bAyT3-pb7-RRqpwBhjrJFn7fVqAX0GI2jJhV5J1qry3iD55yyG1ns0CD-ePjORGphX343xdqdeLu_f_eOJSVzNYyNOb4QIp-aX51TkrH664oLZwyrwiPl4DUb7EtMJV7jHc2u8xYwxkdWtsGvI7cIeD'
+                },
+                {
+                    cat: 'Ron',
+                    label: 'Ron',
+                    subtitle: 'Añejos & Premium',
+                    icon: 'nightlife',
+                    img: 'https://licoreriasunidas.pe/cdn/shop/products/21fb79e6f712438391bff427b5e48dce.webp?v=1677698170&width=500'
+                },
+                {
+                    cat: 'Wisky',
+                    label: 'Whisky',
+                    subtitle: 'Escocia & Mundo',
+                    icon: 'stars',
+                    img: 'imagenesp/redlabel.jpg'
+                }
+            ];
+
+            const ring = document.getElementById('cat-3d-ring');
+            const stage = document.getElementById('cat-3d-stage');
+            const prevBtn = document.getElementById('cat-3d-prev');
+            const nextBtn = document.getElementById('cat-3d-next');
+            const dotsContainer = document.getElementById('cat-3d-dots');
+            const hint = document.getElementById('cat-3d-hint');
+            if (!ring || !stage) return;
+
+            const total = categorias.length;
+            const angleStep = 360 / total;
+            const radius = window.innerWidth < 640 ? 220 : 320;
+            let indiceActivo = 0;
+            let rotacionAnillo = 0;
+            let autoplayTimer = null;
+            let arrastrando = false;
+            let inicioX = 0;
+            let rotacionInicio = 0;
+
+            categorias.forEach(function (cat, i) {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'cat-3d-card';
+                card.dataset.index = String(i);
+                card.dataset.cat = cat.cat;
+                card.setAttribute('aria-label', 'Ver catálogo de ' + cat.label);
+                card.style.transform = 'rotateY(' + (i * angleStep) + 'deg) translateZ(' + radius + 'px)';
+                card.innerHTML = `
+                    <div class="cat-3d-card-inner relative">
+                        <img alt="${cat.label}" class="absolute inset-0 w-full h-full object-cover opacity-50" src="${cat.img}" loading="lazy">
+                        <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/50 to-transparent"></div>
+                        <div class="absolute inset-0 flex flex-col justify-between p-6 text-left">
+                            <span class="material-symbols-outlined text-primary text-[36px]">${cat.icon}</span>
+                            <div>
+                                <span class="font-label-sm text-primary uppercase text-[10px] tracking-widest">${cat.subtitle}</span>
+                                <h3 class="font-headline-md text-white mt-1">${cat.label}</h3>
+                                <span class="inline-flex items-center gap-1 mt-3 font-label-sm text-[10px] uppercase tracking-widest text-on-surface-variant group-hover:text-primary">
+                                    Explorar
+                                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>`;
+                card.addEventListener('click', function () {
+                    const idx = parseInt(card.dataset.index, 10);
+                    if (idx !== indiceActivo) {
+                        irAIndice(idx);
+                        return;
+                    }
+                    abrirCatalogo(null, cat.cat);
+                });
+                ring.appendChild(card);
+            });
+
+            function actualizarEstado() {
+                ring.style.transform = 'rotateY(' + rotacionAnillo + 'deg)';
+                ring.querySelectorAll('.cat-3d-card').forEach(function (card, i) {
+                    card.classList.toggle('is-front', i === indiceActivo);
+                });
+                if (hint && categorias[indiceActivo]) {
+                    hint.textContent = 'Clic en "' + categorias[indiceActivo].label + '" para ver el catálogo · Arrastre para girar';
+                }
+                if (dotsContainer) {
+                    dotsContainer.innerHTML = '';
+                    categorias.forEach(function (_, i) {
+                        const dot = document.createElement('button');
+                        dot.type = 'button';
+                        dot.className = 'w-2.5 h-2.5 rounded-full transition-colors ' + (i === indiceActivo ? 'bg-primary' : 'bg-outline-variant hover:bg-primary/50');
+                        dot.setAttribute('aria-label', 'Ir a ' + categorias[i].label);
+                        dot.addEventListener('click', function () { irAIndice(i); reiniciarAutoplay(); });
+                        dotsContainer.appendChild(dot);
+                    });
+                }
+            }
+
+            function irAIndice(nuevoIndice) {
+                indiceActivo = ((nuevoIndice % total) + total) % total;
+                rotacionAnillo = -indiceActivo * angleStep;
+                actualizarEstado();
+            }
+
+            function avanzar(dir) {
+                irAIndice(indiceActivo + dir);
+            }
+
+            function reiniciarAutoplay() {
+                clearInterval(autoplayTimer);
+                autoplayTimer = setInterval(function () { avanzar(1); }, 4500);
+            }
+
+            function aplicarTilt(e) {
+                const frontCard = ring.querySelector('.cat-3d-card.is-front .cat-3d-card-inner');
+                if (!frontCard || arrastrando) return;
+                const rect = stage.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                const y = (e.clientY - rect.top) / rect.height - 0.5;
+                frontCard.style.transform = 'rotateY(' + (x * 12) + 'deg) rotateX(' + (-y * 10) + 'deg) translateZ(20px)';
+            }
+
+            function resetTilt() {
+                ring.querySelectorAll('.cat-3d-card-inner').forEach(function (inner) {
+                    inner.style.transform = '';
+                });
+            }
+
+            if (prevBtn) prevBtn.addEventListener('click', function () { avanzar(-1); reiniciarAutoplay(); });
+            if (nextBtn) nextBtn.addEventListener('click', function () { avanzar(1); reiniciarAutoplay(); });
+
+            stage.addEventListener('mousemove', aplicarTilt);
+            stage.addEventListener('mouseleave', resetTilt);
+
+            stage.addEventListener('mousedown', function (e) {
+                arrastrando = true;
+                inicioX = e.clientX;
+                rotacionInicio = rotacionAnillo;
+                clearInterval(autoplayTimer);
+                resetTilt();
+            });
+            window.addEventListener('mousemove', function (e) {
+                if (!arrastrando) return;
+                const delta = e.clientX - inicioX;
+                ring.style.transition = 'none';
+                ring.style.transform = 'rotateY(' + (rotacionInicio + delta * 0.4) + 'deg)';
+            });
+            window.addEventListener('mouseup', function (e) {
+                if (!arrastrando) return;
+                arrastrando = false;
+                ring.style.transition = '';
+                const delta = e.clientX - inicioX;
+                if (Math.abs(delta) > 40) avanzar(delta > 0 ? -1 : 1);
+                else actualizarEstado();
+                reiniciarAutoplay();
+            });
+
+            stage.addEventListener('touchstart', function (e) {
+                inicioX = e.touches[0].clientX;
+                rotacionInicio = rotacionAnillo;
+                clearInterval(autoplayTimer);
+            }, { passive: true });
+            stage.addEventListener('touchend', function (e) {
+                const delta = e.changedTouches[0].clientX - inicioX;
+                if (Math.abs(delta) > 40) avanzar(delta > 0 ? -1 : 1);
+                reiniciarAutoplay();
+            }, { passive: true });
+
+            stage.addEventListener('mouseenter', function () { clearInterval(autoplayTimer); });
+            stage.addEventListener('mouseleave', reiniciarAutoplay);
+
+            actualizarEstado();
+            reiniciarAutoplay();
+        })();
+
+        // Carrusel de productos más vendidos
+        (function initBestsellersCarousel() {
+            const track = document.getElementById('bestsellers-track');
+            const viewport = document.getElementById('bestsellers-viewport');
+            const dotsContainer = document.getElementById('bestsellers-dots');
+            const prevBtn = document.getElementById('bestsellers-prev');
+            const nextBtn = document.getElementById('bestsellers-next');
+            if (!track || !viewport) return;
+
+            const productos = productosCatalogo.filter(p => p.masVendido);
+            if (productos.length === 0) {
+                document.getElementById('mas-vendidos').style.display = 'none';
+                return;
+            }
+
+            productos.forEach(p => {
+                const agotado = p.stock <= 0;
+                const slide = document.createElement('div');
+                slide.className = 'bestseller-slide';
+                slide.innerHTML = `
+                    <div class="group bg-surface-container rounded-lg overflow-hidden border border-outline-variant hover:border-primary transition-colors duration-300 flex flex-col h-full mx-1">
+                        <div class="aspect-square bg-surface-bright relative p-8">
+                            <img alt="${p.nombre}" class="w-full h-full object-contain ${agotado ? 'opacity-40' : ''}" src="${p.img}" loading="lazy">
+                            <div class="absolute top-3 left-3 bg-primary text-on-primary px-3 py-1 font-label-sm rounded text-[10px] uppercase flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[12px]">local_fire_department</span>
+                                ${p.tag || 'Más Vendido'}
+                            </div>
+                            ${agotado ? '<div class="absolute top-3 right-3 bg-surface-container-lowest border border-outline text-on-surface-variant px-3 py-1 font-label-sm rounded text-[10px] uppercase">Agotado</div>' : ''}
+                        </div>
+                        <div class="p-5 flex flex-col flex-grow">
+                            ${p.categoria ? `<span class="font-label-sm text-on-surface-variant uppercase text-[10px] tracking-widest">${p.categoria}</span>` : ''}
+                            <h3 class="font-headline-md text-white mt-1 text-lg leading-snug">${p.nombre}</h3>
+                            <p class="font-body-md text-on-surface mt-2 line-clamp-2 text-sm">${p.desc}</p>
+                            <div class="mt-auto pt-5 border-t border-outline-variant flex flex-col gap-3">
+                                <span class="font-headline-md text-primary">${p.precio}</span>
+                                <button type="button" onclick="agregarAlCarrito(${p.id}, 1)" ${agotado ? 'disabled' : ''} class="w-full flex items-center justify-center gap-2 ${agotado ? 'bg-surface-container-high text-on-surface-variant cursor-not-allowed' : 'bg-primary hover:bg-primary-container text-on-primary'} px-4 py-3 rounded-lg font-label-sm uppercase tracking-widest text-[11px] transition-colors">
+                                    ${ICONO_CARRITO_SVG}
+                                    ${agotado ? 'No disponible' : 'Agregar al Carrito'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+                track.appendChild(slide);
+            });
+
+            let indice = 0;
+            let visibleCount = 1;
+            let autoplayTimer = null;
+
+            function getVisibleCount() {
+                const w = window.innerWidth;
+                if (w >= 1280) return 4;
+                if (w >= 1024) return 3;
+                if (w >= 640) return 2;
+                return 1;
+            }
+
+            function getMaxIndex() {
+                return Math.max(0, productos.length - visibleCount);
+            }
+
+            function renderDots() {
+                if (!dotsContainer) return;
+                dotsContainer.innerHTML = '';
+                const totalPages = getMaxIndex() + 1;
+                if (totalPages <= 1) return;
+                for (let i = 0; i < totalPages; i++) {
+                    const dot = document.createElement('button');
+                    dot.type = 'button';
+                    dot.className = 'w-2.5 h-2.5 rounded-full transition-colors ' + (i === indice ? 'bg-primary' : 'bg-outline-variant hover:bg-primary/50');
+                    dot.setAttribute('aria-label', 'Ir a la página ' + (i + 1));
+                    dot.addEventListener('click', () => { indice = i; updateCarousel(); resetAutoplay(); });
+                    dotsContainer.appendChild(dot);
+                }
+            }
+
+            function updateCarousel() {
+                visibleCount = getVisibleCount();
+                if (indice > getMaxIndex()) indice = getMaxIndex();
+                const slideWidth = track.children[0] ? track.children[0].offsetWidth : 0;
+                track.style.transform = 'translateX(-' + (indice * slideWidth) + 'px)';
+                if (prevBtn) prevBtn.disabled = indice === 0;
+                if (nextBtn) nextBtn.disabled = indice >= getMaxIndex();
+                renderDots();
+            }
+
+            function avanzar(direccion) {
+                indice = Math.min(Math.max(0, indice + direccion), getMaxIndex());
+                updateCarousel();
+            }
+
+            function resetAutoplay() {
+                clearInterval(autoplayTimer);
+                autoplayTimer = setInterval(function () {
+                    if (indice >= getMaxIndex()) indice = 0;
+                    else indice++;
+                    updateCarousel();
+                }, 5000);
+            }
+
+            if (prevBtn) prevBtn.addEventListener('click', function () { avanzar(-1); resetAutoplay(); });
+            if (nextBtn) nextBtn.addEventListener('click', function () { avanzar(1); resetAutoplay(); });
+
+            viewport.addEventListener('mouseenter', function () { clearInterval(autoplayTimer); });
+            viewport.addEventListener('mouseleave', resetAutoplay);
+
+            let resizeTimer;
+            window.addEventListener('resize', function () {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(updateCarousel, 100);
+            });
+
+            updateCarousel();
+            resetAutoplay();
+        })();
+    </script>
+    </body></html>
+    </body></html>
