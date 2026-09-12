@@ -1238,9 +1238,9 @@
     <button data-cat="todos" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Todos</button>
     <button data-cat="pisco" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Piscos</button>
     <button data-cat="vino" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Vinos</button>
+    <button data-cat="Wisky" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Whisky</button>
     <button data-cat="Ron" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Ron</button>
-    <button data-cat="Wisky" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Wisky</button>
-
+    <button data-cat="licor" class="cat-filtro-btn px-6 py-3 font-label-sm uppercase tracking-widest rounded-full border transition-colors">Licores</button>
     </div>
     
 
@@ -1252,7 +1252,7 @@
     <button data-subcat="rosado" class="vino-sub-btn px-5 py-2 font-label-sm uppercase tracking-widest rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors text-[11px]">Rosados</button>
     <button data-subcat="espumante" class="vino-sub-btn px-5 py-2 font-label-sm uppercase tracking-widest rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors text-[11px]">Espumantes</button>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="catalogo-grid"></div>
+    <div class="space-y-16" id="catalogo-grid"></div>
     </div>
     <!-- Lo que llevas: fijo en esquina inferior derecha -->
     <aside id="cart-float" aria-live="polite">
@@ -1729,7 +1729,7 @@
         // 🛒 PRODUCTOS DEL CATÁLOGO
         // Para editar: cambia el valor después de los " : " en cada línea.
         // No borres las comas "," al final de cada línea ni las llaves { }.
-        // categoria "cat" debe ser: "pisco", "vino" o "licor"
+        // categoria "cat" debe ser: "pisco", "vino", "Wisky", "Ron" o "licor"
         // "sub" (solo para vinos) debe ser: "tinto", "blanco", "rosado", "espumante" o "" si no aplica
         // "masVendido: true" muestra el producto en el carrusel de más vendidos
         // ============================================================
@@ -1957,6 +1957,20 @@
         guardarCarrito();
         sincronizarCarritoUI();
     
+        const CATEGORIAS_CATALOGO = [
+            { cat: 'pisco', label: 'Piscos' },
+            { cat: 'vino', label: 'Vinos' },
+            { cat: 'Wisky', label: 'Whisky' },
+            { cat: 'Ron', label: 'Ron' },
+            { cat: 'licor', label: 'Licores' }
+        ];
+        const VINO_SUBCATEGORIAS = [
+            { sub: 'tinto', label: 'Tintos' },
+            { sub: 'blanco', label: 'Blancos' },
+            { sub: 'rosado', label: 'Rosados' },
+            { sub: 'espumante', label: 'Espumantes' }
+        ];
+    
         let filtroActivo = 'todos';
         let subFiltroActivo = 'todos';
     
@@ -1980,6 +1994,72 @@
             document.getElementById('vino-subfiltros').classList.toggle('hidden', filtroActivo !== 'vino');
         }
     
+        function crearTarjetaProducto(p) {
+            const card = document.createElement('div');
+            card.className = "group bg-surface-container rounded-lg overflow-hidden border border-outline-variant hover:border-primary transition-colors duration-300 flex flex-col h-full";
+            const agotado = p.stock <= 0;
+            const maxCantidad = Math.min(p.stock, 20);
+            let opcionesCantidad = '';
+            for (let i = 1; i <= maxCantidad; i++) {
+                opcionesCantidad += `<option value="${i}">${i}</option>`;
+            }
+            card.innerHTML = `
+                <div class="aspect-square bg-surface-bright relative p-12">
+                    <img alt="${p.nombre}" class="w-full h-full object-contain ${agotado ? 'opacity-40' : ''}" src="${p.img}">
+                    ${p.tag && !agotado ? `<div class="absolute top-4 left-4 bg-primary text-on-primary px-3 py-1 font-label-sm rounded text-[10px] uppercase">${p.tag}</div>` : ''}
+                    ${agotado ? `<div class="absolute top-4 left-4 bg-surface-container-lowest border border-outline text-on-surface-variant px-3 py-1 font-label-sm rounded text-[10px] uppercase">Agotado</div>` : ''}
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <div class="mb-4">
+                        <span class="font-label-sm text-on-surface-variant uppercase text-[10px] tracking-widest">${p.categoria}</span>
+                        <h3 class="font-headline-md text-white mt-1">${p.nombre}</h3>
+                        <p class="font-body-md text-on-surface mt-2 line-clamp-2">${p.desc}</p>
+                        <div class="mt-3 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px] ${agotado ? 'text-red-400' : 'text-primary'}">inventory_2</span>
+                            <span class="text-[11px] uppercase tracking-widest ${agotado ? 'text-red-400' : 'text-on-surface-variant'}">
+                                ${agotado ? 'Sin stock disponible' : `Stock: ${p.stock} disponibles`}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-auto pt-6 border-t border-outline-variant flex flex-col gap-4">
+                        <div class="flex justify-between items-center">
+                            <span class="font-headline-md text-primary">${p.precio}</span>
+                            <div class="flex items-center gap-2">
+                                <label for="cantidad-${p.id}" class="text-[10px] uppercase tracking-widest text-on-surface-variant">Cant.</label>
+                                <select id="cantidad-${p.id}" ${agotado ? 'disabled' : ''} class="bg-surface-container-high border border-outline-variant text-white text-base rounded-lg px-4 py-3 min-w-[70px] focus:ring-2 focus:ring-primary focus:outline-none disabled:opacity-40">
+                                    ${agotado ? '<option value="0">0</option>' : opcionesCantidad}
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" onclick="agregarAlCarrito(${p.id})" ${agotado ? 'disabled' : ''} aria-label="Agregar al carrito" class="w-full flex items-center justify-center gap-2 ${agotado ? 'bg-surface-container-high text-on-surface-variant cursor-not-allowed' : 'bg-primary hover:bg-primary-container text-on-primary active:scale-95'} px-4 py-3 rounded-lg font-label-sm uppercase tracking-widest text-[11px] transition-colors">
+                            ${ICONO_CARRITO_SVG}
+                            ${agotado ? 'No disponible' : 'Agregar al Carrito'}
+                        </button>
+                    </div>
+                </div>`;
+            return card;
+        }
+    
+        function renderGrupoProductos(contenedor, titulo, productos) {
+            if (!productos.length) return;
+            const seccion = document.createElement('section');
+            seccion.className = 'catalogo-grupo';
+            if (titulo) {
+                const encabezado = document.createElement('div');
+                encabezado.className = 'mb-8 flex items-end justify-between gap-4 border-b border-outline-variant pb-4';
+                encabezado.innerHTML = `
+                    <h2 class="font-headline-md text-white">${titulo}</h2>
+                    <span class="font-label-sm text-on-surface-variant uppercase tracking-widest text-[11px]">${productos.length} producto${productos.length === 1 ? '' : 's'}</span>
+                `;
+                seccion.appendChild(encabezado);
+            }
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8';
+            productos.forEach(p => grid.appendChild(crearTarjetaProducto(p)));
+            seccion.appendChild(grid);
+            contenedor.appendChild(seccion);
+        }
+    
         function renderCatalogo() {
             const grid = document.getElementById('catalogo-grid');
             if (!grid) return;
@@ -1990,54 +2070,25 @@
                 return true;
             });
             if (lista.length === 0) {
-                grid.innerHTML = '<p class="text-on-surface-variant col-span-full text-center py-12">No hay productos en esta categoría por el momento.</p>';
+                grid.innerHTML = '<p class="text-on-surface-variant text-center py-12">No hay productos en esta categoría por el momento.</p>';
                 return;
             }
-            lista.forEach(p => {
-                const card = document.createElement('div');
-                card.className = "group bg-surface-container rounded-lg overflow-hidden border border-outline-variant hover:border-primary transition-colors duration-300 flex flex-col h-full";
-                const agotado = p.stock <= 0;
-                const maxCantidad = Math.min(p.stock, 20);
-                let opcionesCantidad = '';
-                for (let i = 1; i <= maxCantidad; i++) {
-                    opcionesCantidad += `<option value="${i}">${i}</option>`;
-                }
-                card.innerHTML = `
-                    <div class="aspect-square bg-surface-bright relative p-12">
-                        <img alt="${p.nombre}" class="w-full h-full object-contain ${agotado ? 'opacity-40' : ''}" src="${p.img}">
-                        ${p.tag && !agotado ? `<div class="absolute top-4 left-4 bg-primary text-on-primary px-3 py-1 font-label-sm rounded text-[10px] uppercase">${p.tag}</div>` : ''}
-                        ${agotado ? `<div class="absolute top-4 left-4 bg-surface-container-lowest border border-outline text-on-surface-variant px-3 py-1 font-label-sm rounded text-[10px] uppercase">Agotado</div>` : ''}
-                    </div>
-                    <div class="p-6 flex flex-col flex-grow">
-                        <div class="mb-4">
-                            <span class="font-label-sm text-on-surface-variant uppercase text-[10px] tracking-widest">${p.categoria}</span>
-                            <h3 class="font-headline-md text-white mt-1">${p.nombre}</h3>
-                            <p class="font-body-md text-on-surface mt-2 line-clamp-2">${p.desc}</p>
-                            <div class="mt-3 flex items-center gap-2">
-                                <span class="material-symbols-outlined text-[16px] ${agotado ? 'text-red-400' : 'text-primary'}">inventory_2</span>
-                                <span class="text-[11px] uppercase tracking-widest ${agotado ? 'text-red-400' : 'text-on-surface-variant'}">
-                                    ${agotado ? 'Sin stock disponible' : `Stock: ${p.stock} disponibles`}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="mt-auto pt-6 border-t border-outline-variant flex flex-col gap-4">
-                            <div class="flex justify-between items-center">
-                                <span class="font-headline-md text-primary">${p.precio}</span>
-                                <div class="flex items-center gap-2">
-                                    <label for="cantidad-${p.id}" class="text-[10px] uppercase tracking-widest text-on-surface-variant">Cant.</label>
-                                    <select id="cantidad-${p.id}" ${agotado ? 'disabled' : ''} class="bg-surface-container-high border border-outline-variant text-white text-base rounded-lg px-4 py-3 min-w-[70px] focus:ring-2 focus:ring-primary focus:outline-none disabled:opacity-40">
-                                        ${agotado ? '<option value="0">0</option>' : opcionesCantidad}
-                                    </select>
-                                </div>
-                            </div>
-                            <button type="button" onclick="agregarAlCarrito(${p.id})" ${agotado ? 'disabled' : ''} aria-label="Agregar al carrito" class="w-full flex items-center justify-center gap-2 ${agotado ? 'bg-surface-container-high text-on-surface-variant cursor-not-allowed' : 'bg-primary hover:bg-primary-container text-on-primary active:scale-95'} px-4 py-3 rounded-lg font-label-sm uppercase tracking-widest text-[11px] transition-colors">
-                                ${ICONO_CARRITO_SVG}
-                                ${agotado ? 'No disponible' : 'Agregar al Carrito'}
-                            </button>
-                        </div>
-                    </div>`;
-                grid.appendChild(card);
-            });
+            if (filtroActivo === 'todos') {
+                CATEGORIAS_CATALOGO.forEach(grupo => {
+                    renderGrupoProductos(grid, grupo.label, lista.filter(p => p.cat === grupo.cat));
+                });
+                const otros = lista.filter(p => !CATEGORIAS_CATALOGO.some(grupo => grupo.cat === p.cat));
+                renderGrupoProductos(grid, 'Otros', otros);
+                return;
+            }
+            if (filtroActivo === 'vino' && subFiltroActivo === 'todos') {
+                VINO_SUBCATEGORIAS.forEach(grupo => {
+                    renderGrupoProductos(grid, grupo.label, lista.filter(p => p.sub === grupo.sub));
+                });
+                renderGrupoProductos(grid, 'Otros vinos', lista.filter(p => !VINO_SUBCATEGORIAS.some(grupo => grupo.sub === p.sub)));
+                return;
+            }
+            renderGrupoProductos(grid, '', lista);
         }
     
         document.querySelectorAll('.cat-filtro-btn').forEach(btn => {
