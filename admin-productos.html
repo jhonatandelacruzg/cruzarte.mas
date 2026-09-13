@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrar catálogo · CRUZARTE+</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#16130b;
+    --panel:#211d14;
+    --panel-2:#2a2417;
+    --line:#3d392f;
+    --gold:#ecc246;
+    --gold-dim:#a8863a;
+    --text:#eae1d4;
+    --text-dim:#a89f8d;
+    --danger:#c9584a;
+    --ok:#7fae6f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Geist', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    padding:28px 24px 20px;
+    border-bottom:1px solid var(--line);
+    max-width:1100px;
+    margin:0 auto;
+  }
+  header h1{
+    margin:0 0 4px;
+    font-size:22px;
+    font-weight:700;
+    letter-spacing:0.2px;
+  }
+  header p{
+    margin:0;
+    color:var(--text-dim);
+    font-size:14px;
+    line-height:1.5;
+    max-width:640px;
+  }
+  main{
+    max-width:1100px;
+    margin:0 auto;
+    padding:24px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:20px;
+  }
+  @media (min-width:960px){
+    main{grid-template-columns: 420px 1fr;}
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px;
+  }
+  .card h2{
+    margin:0 0 14px;
+    font-size:15px;
+    font-weight:700;
+    color:var(--gold);
+  }
+  .field{margin-bottom:12px;}
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--text-dim);
+    margin-bottom:5px;
+  }
+  .field input[type=text],
+  .field input[type=number],
+  .field select,
+  .field textarea{
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:6px;
+    color:var(--text);
+    padding:9px 10px;
+    font-size:13px;
+    font-family:inherit;
+  }
+  .field textarea{resize:vertical; min-height:56px;}
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:none;
+    border-color:var(--gold-dim);
+  }
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .checkline{
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; color:var(--text-dim);
+    margin-bottom:14px;
+  }
+  .checkline input{width:16px; height:16px;}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    border:none; border-radius:6px;
+    padding:11px 16px;
+    font-size:13px; font-weight:600;
+    cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  .btn:hover{opacity:.88;}
+  .btn-primary{background:var(--gold); color:#1a1608; width:100%;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--text);}
+  .btn-danger{background:transparent; border:1px solid var(--danger); color:var(--danger); padding:6px 10px; font-size:12px;}
+  .btn-sm{padding:6px 10px; font-size:12px;}
+  .toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;}
+  #file-input{display:none;}
+  .status{
+    font-size:12px; padding:9px 12px; border-radius:6px;
+    margin-bottom:14px; display:none;
+  }
+  .status.show{display:block;}
+  .status.ok{background:rgba(127,174,111,0.12); color:var(--ok); border:1px solid rgba(127,174,111,0.3);}
+  .status.err{background:rgba(201,88,74,0.12); color:var(--danger); border:1px solid rgba(201,88,74,0.3);}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.4px;
+    color:var(--text-dim); padding:8px 10px; border-bottom:1px solid var(--line);
+  }
+  td{padding:10px; border-bottom:1px solid rgba(61,57,47,0.5); vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .prod-name{font-weight:600; color:var(--text);}
+  .prod-meta{color:var(--text-dim); font-size:11px; margin-top:2px;}
+  .badge{
+    display:inline-block; font-size:10px; padding:2px 7px; border-radius:20px;
+    background:rgba(236,194,70,0.14); color:var(--gold); margin-right:4px;
+  }
+  .badge.stockout{background:rgba(201,88,74,0.15); color:var(--danger);}
+  .empty{
+    text-align:center; padding:40px 20px; color:var(--text-dim); font-size:13px;
+  }
+  .count-pill{
+    font-size:12px; color:var(--text-dim); margin-left:6px;
+  }
+  .actions-cell{display:flex; gap:6px; flex-wrap:wrap;}
+  .thumb{
+    width:38px; height:38px; border-radius:5px; object-fit:cover;
+    background:#0c0a06; border:1px solid var(--line); flex-shrink:0;
+  }
+  .name-cell{display:flex; gap:10px; align-items:flex-start;}
+
+  .img-tabs{display:flex; gap:6px; margin-bottom:8px;}
+  .img-tab{
+    flex:1; background:var(--bg); border:1px solid var(--line); color:var(--text-dim);
+    border-radius:6px; padding:7px 8px; font-size:11.5px; cursor:pointer; font-family:inherit;
+    transition:all .15s ease;
+  }
+  .img-tab.active{background:rgba(236,194,70,0.12); border-color:var(--gold-dim); color:var(--gold);}
+  .dropzone{
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    gap:8px; min-height:110px; border:1.5px dashed var(--line); border-radius:8px;
+    background:var(--bg); cursor:pointer; padding:14px; text-align:center;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .dropzone:hover, .dropzone.drag-over{border-color:var(--gold-dim); background:rgba(236,194,70,0.05);}
+  .dropzone-text{font-size:12px; color:var(--text-dim); line-height:1.5;}
+  .dropzone-icon{display:block; font-size:20px; color:var(--gold-dim); margin-bottom:2px;}
+  #img-preview{max-width:100%; max-height:150px; border-radius:6px; object-fit:contain;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Administrar catálogo — CRUZARTE+</h1>
+  <p>Carga tu <code>productos.js</code> actual, agrega o edita productos con el formulario, y descarga el archivo actualizado para subirlo a tu repositorio. No necesitas tocar código.</p>
+</header>
+
+<main>
+  <!-- FORMULARIO -->
+  <div class="card">
+    <h2 id="form-title">Agregar producto</h2>
+    <div id="status" class="status"></div>
+
+    <div class="field">
+      <label>Nombre del producto</label>
+      <input type="text" id="f-nombre" placeholder="Ej: Ron Cartavio Black Botella 750ml">
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Categoría (cat)</label>
+        <select id="f-cat">
+          <option value="pisco">Pisco</option>
+          <option value="vino">Vino</option>
+          <option value="Wisky">Wisky</option>
+          <option value="Ron">Ron</option>
+          <option value="licor">Licor</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Subcategoría (solo vinos)</label>
+        <select id="f-sub">
+          <option value="">— No aplica —</option>
+          <option value="tinto">Tinto</option>
+          <option value="blanco">Blanco</option>
+          <option value="rosado">Rosado</option>
+          <option value="espumante">Espumante</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Etiqueta descriptiva (categoria, opcional)</label>
+      <input type="text" id="f-categoria" placeholder="Ej: VINO TINTO • VALLE DE MAJES">
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Precio (con moneda)</label>
+        <input type="text" id="f-precio" placeholder="Ej: S/60 o $85.00 USD">
+      </div>
+      <div class="field">
+        <label>Stock disponible</label>
+        <input type="number" id="f-stock" min="0" placeholder="Ej: 12">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Imagen del producto</label>
+      <div class="img-tabs">
+        <button type="button" class="img-tab active" id="tab-upload" data-mode="upload">Subir desde mi computadora</button>
+        <button type="button" class="img-tab" id="tab-url" data-mode="url">Usar URL / ruta</button>
+      </div>
+
+      <div id="img-mode-upload">
+        <label for="f-img-file" class="dropzone" id="dropzone">
+          <img id="img-preview" style="display:none;">
+          <div id="dropzone-text">
+            <span class="dropzone-icon">＋</span>
+            Haz clic para elegir una foto, o arrástrala aquí
+          </div>
+        </label>
+        <input type="file" id="f-img-file" accept="image/*" style="display:none;">
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-remove-img" style="display:none;margin-top:8px;">Quitar imagen</button>
+      </div>
+
+      <div id="img-mode-url" style="display:none;">
+        <input type="text" id="f-img-url" placeholder="imagenes/producto.jpg o https://...">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Descripción</label>
+      <textarea id="f-desc" placeholder="Descripción breve del producto"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Etiqueta (tag) visible en la tarjeta</label>
+      <input type="text" id="f-tag" placeholder="Ej: Más Vendido, Nuevo, Edición Limitada (opcional)">
+    </div>
+
+    <label class="checkline">
+      <input type="checkbox" id="f-masvendido">
+      Mostrar en el carrusel de "Más Vendidos"
+    </label>
+
+    <button class="btn btn-primary" id="btn-save">Agregar al catálogo</button>
+    <button class="btn btn-ghost" id="btn-cancel" style="width:100%;margin-top:8px;display:none;">Cancelar edición</button>
+  </div>
+
+  <!-- LISTADO -->
+  <div class="card">
+    <div class="toolbar">
+      <button class="btn btn-ghost btn-sm" id="btn-load">Cargar productos.js</button>
+      <input type="file" id="file-input" accept=".js,.txt">
+      <button class="btn btn-ghost btn-sm" id="btn-download">Descargar productos.js actualizado</button>
+      <button class="btn btn-ghost btn-sm" id="btn-copy">Copiar código</button>
+    </div>
+    <h2>Productos en el catálogo <span class="count-pill" id="count-pill"></span></h2>
+    <table id="prod-table" style="display:none;">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="prod-tbody"></tbody>
+    </table>
+    <div class="empty" id="empty-msg">
+      Todavía no has cargado ningún catálogo.<br>
+      Haz clic en "Cargar productos.js" y selecciona tu archivo actual, o simplemente empieza a agregar productos nuevos.
+    </div>
+  </div>
+</main>
+
+<script>
+let productos = [];
+let editingId = null;
+
+const $ = (id) => document.getElementById(id);
+const els = {
+  nombre: $('f-nombre'), cat: $('f-cat'), sub: $('f-sub'), categoria: $('f-categoria'),
+  precio: $('f-precio'), stock: $('f-stock'), desc: $('f-desc'),
+  tag: $('f-tag'), masvendido: $('f-masvendido')
+};
+
+// ---- Manejo de imagen (subir desde escritorio o URL/ruta) ----
+let imgMode = 'upload';
+let imgDataUrl = ''; // guarda el resultado final: base64 o URL/ruta escrita
+
+function setImgMode(mode){
+  imgMode = mode;
+  $('tab-upload').classList.toggle('active', mode === 'upload');
+  $('tab-url').classList.toggle('active', mode === 'url');
+  $('img-mode-upload').style.display = mode === 'upload' ? 'block' : 'none';
+  $('img-mode-url').style.display = mode === 'url' ? 'block' : 'none';
+}
+$('tab-upload').addEventListener('click', () => setImgMode('upload'));
+$('tab-url').addEventListener('click', () => setImgMode('url'));
+
+function handleImgFile(file){
+  if (!file || !file.type.startsWith('image/')){
+    showStatus('Elige un archivo de imagen válido.', 'err');
+    return;
+  }
+  if (file.size > 800 * 1024){
+    showStatus('Esa imagen pesa ' + (file.size/1024/1024).toFixed(1) + ' MB. Se subirá igual, pero conviene comprimirla (ideal: menos de 500 KB) para que la web cargue rápido.', 'err');
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    imgDataUrl = ev.target.result;
+    $('img-preview').src = imgDataUrl;
+    $('img-preview').style.display = 'block';
+    $('dropzone-text').style.display = 'none';
+    $('btn-remove-img').style.display = 'inline-flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+$('f-img-file').addEventListener('change', (e) => handleImgFile(e.target.files[0]));
+
+const dz = $('dropzone');
+dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dz.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) handleImgFile(e.dataTransfer.files[0]);
+});
+
+$('btn-remove-img').addEventListener('click', (e) => {
+  e.preventDefault();
+  imgDataUrl = '';
+  $('f-img-file').value = '';
+  $('img-preview').src = '';
+  $('img-preview').style.display = 'none';
+  $('dropzone-text').style.display = 'block';
+  $('btn-remove-img').style.display = 'none';
+});
+
+function resetImgField(){
+  imgDataUrl = '';
+  $('f-img-file').value = '';
+  $('f-img-url').value = '';
+  $('img-preview').src = '';
+  $('img-preview').style.display = 'none';
+  $('dropzone-text').style.display = 'block';
+  $('btn-remove-img').style.display = 'none';
+  setImgMode('upload');
+}
+
+function getImgValue(){
+  return imgMode === 'upload' ? imgDataUrl : $('f-img-url').value.trim();
+}
+
+function loadImgIntoField(imgValue){
+  const val = imgValue || '';
+  if (val.startsWith('data:image/')){
+    imgDataUrl = val;
+    $('img-preview').src = val;
+    $('img-preview').style.display = 'block';
+    $('dropzone-text').style.display = 'none';
+    $('btn-remove-img').style.display = 'inline-flex';
+    setImgMode('upload');
+  } else {
+    $('f-img-url').value = val;
+    setImgMode('url');
+  }
+}
+
+function showStatus(msg, type){
+  const s = $('status');
+  s.textContent = msg;
+  s.className = 'status show ' + type;
+  setTimeout(() => s.classList.remove('show'), 3500);
+}
+
+function clearForm(){
+  els.nombre.value = ''; els.cat.value = 'pisco'; els.sub.value = '';
+  els.categoria.value = ''; els.precio.value = ''; els.stock.value = '';
+  els.desc.value = ''; els.tag.value = '';
+  els.masvendido.checked = false;
+  resetImgField();
+  editingId = null;
+  $('form-title').textContent = 'Agregar producto';
+  $('btn-save').textContent = 'Agregar al catálogo';
+  $('btn-cancel').style.display = 'none';
+}
+
+function nextId(){
+  if (productos.length === 0) return 1;
+  return Math.max(...productos.map(p => p.id)) + 1;
+}
+
+function render(){
+  const tbody = $('prod-tbody');
+  const table = $('prod-table');
+  const empty = $('empty-msg');
+  $('count-pill').textContent = productos.length ? `(${productos.length})` : '';
+
+  if (productos.length === 0){
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  table.style.display = 'table';
+  empty.style.display = 'none';
+
+  tbody.innerHTML = productos.map(p => {
+    const agotado = Number(p.stock) <= 0;
+    return `
+      <tr>
+        <td>
+          <div class="name-cell">
+            <img class="thumb" src="${p.img || ''}" onerror="this.style.opacity=0.2">
+            <div>
+              <div class="prod-name">${escapeHtml(p.nombre)}</div>
+              <div class="prod-meta">
+                <span class="badge">${escapeHtml(p.cat)}</span>${p.sub ? `<span class="badge">${escapeHtml(p.sub)}</span>` : ''}${p.masVendido ? `<span class="badge">Más Vendido</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td>${escapeHtml(p.precio || '')}</td>
+        <td>${agotado ? '<span class="badge stockout">Agotado</span>' : escapeHtml(String(p.stock))}</td>
+        <td>
+          <div class="actions-cell">
+            <button class="btn btn-ghost btn-sm" onclick="editProduct(${p.id})">Editar</button>
+            <button class="btn btn-danger" onclick="deleteProduct(${p.id})">Eliminar</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function editProduct(id){
+  const p = productos.find(x => x.id === id);
+  if (!p) return;
+  editingId = id;
+  els.nombre.value = p.nombre || '';
+  els.cat.value = p.cat || 'pisco';
+  els.sub.value = p.sub || '';
+  els.categoria.value = p.categoria || '';
+  els.precio.value = p.precio || '';
+  els.stock.value = p.stock ?? '';
+  loadImgIntoField(p.img || '');
+  els.desc.value = p.desc || '';
+  els.tag.value = p.tag || '';
+  els.masvendido.checked = !!p.masVendido;
+  $('form-title').textContent = 'Editando: ' + p.nombre;
+  $('btn-save').textContent = 'Guardar cambios';
+  $('btn-cancel').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function deleteProduct(id){
+  const p = productos.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm(`¿Eliminar "${p.nombre}" del catálogo?`)) return;
+  productos = productos.filter(x => x.id !== id);
+  render();
+  showStatus('Producto eliminado. Recuerda descargar el archivo actualizado.', 'ok');
+}
+
+$('btn-save').addEventListener('click', () => {
+  const nombre = els.nombre.value.trim();
+  if (!nombre){ showStatus('Ponle un nombre al producto.', 'err'); return; }
+  if (!els.precio.value.trim()){ showStatus('Ponle un precio.', 'err'); return; }
+
+  const data = {
+    nombre,
+    categoria: els.categoria.value.trim(),
+    cat: els.cat.value,
+    sub: els.sub.value,
+    stock: Number(els.stock.value) || 0,
+    precio: els.precio.value.trim(),
+    tag: els.tag.value.trim(),
+    masVendido: els.masvendido.checked,
+    desc: els.desc.value.trim(),
+    img: getImgValue()
+  };
+
+  if (editingId !== null){
+    const idx = productos.findIndex(p => p.id === editingId);
+    productos[idx] = { id: editingId, ...data };
+    showStatus('Producto actualizado. Descarga el archivo para publicar el cambio.', 'ok');
+  } else {
+    productos.push({ id: nextId(), ...data });
+    showStatus('Producto agregado. Descarga el archivo para publicarlo.', 'ok');
+  }
+  clearForm();
+  render();
+});
+
+$('btn-cancel').addEventListener('click', clearForm);
+
+$('btn-load').addEventListener('click', () => $('file-input').click());
+
+$('file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const text = ev.target.result;
+      const match = text.match(/const\s+productosCatalogo\s*=\s*(\[[\s\S]*?\]);?\s*$/m) ||
+                    text.match(/const\s+productosCatalogo\s*=\s*(\[[\s\S]*\])/);
+      if (!match) throw new Error('No se encontró el array productosCatalogo en el archivo.');
+      // eslint-disable-next-line no-eval
+      const parsed = Function('"use strict"; return (' + match[1] + ')')();
+      if (!Array.isArray(parsed)) throw new Error('El contenido no es una lista válida.');
+      productos = parsed;
+      render();
+      showStatus(`Catálogo cargado: ${productos.length} productos.`, 'ok');
+    } catch (err) {
+      showStatus('No pude leer el archivo: ' + err.message, 'err');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+function buildFileContents(){
+  const header = `// ============================================================
+// CATÁLOGO DE PRODUCTOS — CRUZARTE+
+// Generado con admin-productos.html — última actualización: ${new Date().toLocaleString('es-PE')}
+//
+// "cat" debe ser: "pisco", "vino", "Wisky", "Ron" o "licor"
+// "sub" (solo vinos): "tinto", "blanco", "rosado", "espumante" o ""
+// "masVendido: true" muestra el producto en el carrusel de más vendidos
+// ============================================================
+const productosCatalogo = [
+`;
+  const body = productos.map(p => {
+    return `    {
+        id: ${p.id},
+        nombre: ${JSON.stringify(p.nombre)},
+        categoria: ${JSON.stringify(p.categoria || '')},
+        cat: ${JSON.stringify(p.cat)},
+        sub: ${JSON.stringify(p.sub || '')},
+        stock: ${Number(p.stock) || 0},
+        precio: ${JSON.stringify(p.precio || '')},
+        tag: ${JSON.stringify(p.tag || '')},
+        masVendido: ${!!p.masVendido},
+        desc: ${JSON.stringify(p.desc || '')},
+        img: ${JSON.stringify(p.img || '')}
+    }`;
+  }).join(',\n');
+  return header + body + '\n];\n';
+}
+
+$('btn-download').addEventListener('click', () => {
+  if (productos.length === 0){ showStatus('No hay productos que exportar todavía.', 'err'); return; }
+  const contents = buildFileContents();
+  const blob = new Blob([contents], { type: 'text/javascript' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'productos.js';
+  a.click();
+  URL.revokeObjectURL(url);
+  showStatus('Archivo descargado. Súbelo a tu repositorio reemplazando productos.js.', 'ok');
+});
+
+$('btn-copy').addEventListener('click', async () => {
+  if (productos.length === 0){ showStatus('No hay productos que copiar todavía.', 'err'); return; }
+  const contents = buildFileContents();
+  try {
+    await navigator.clipboard.writeText(contents);
+    showStatus('Código copiado al portapapeles.', 'ok');
+  } catch {
+    showStatus('No se pudo copiar automáticamente; usa "Descargar" en su lugar.', 'err');
+  }
+});
+
+render();
+</script>
+</body>
+</html>
