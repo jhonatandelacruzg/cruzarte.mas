@@ -1,6 +1,6 @@
 // ============================================================
 // CATÁLOGO DE PRODUCTOS — CRUZARTE+
-// Generado con admin-productos.html — última actualización: 13/9/2026, 2:09:56 a. m.
+// Generado con admin-productos.html — última actualización: 13/9/2026, 2:54:09 a. m.
 //
 // "cat" debe ser: "pisco", "vino", "Wisky", "Ron" o "licor"
 // "sub" (solo vinos): "tinto", "blanco", "rosado", "espumante" o ""
@@ -183,7 +183,7 @@ const productosCatalogo = [
         cat: "Ron",
         sub: "",
         stock: 50,
-        precio: "S/29.90",
+        precio: "60",
         tag: "Más Vendido",
         masVendido: true,
         desc: "Profundos aromas de melazas, mieles y especias dulces, de canela y vainilla,con un envolvente final de granos de café recién tostados, cacao y chocolate negro.",
