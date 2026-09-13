@@ -166,16 +166,89 @@
   .dropzone-text{font-size:12px; color:var(--text-dim); line-height:1.5;}
   .dropzone-icon{display:block; font-size:20px; color:var(--gold-dim); margin-bottom:2px;}
   #img-preview{max-width:100%; max-height:150px; border-radius:6px; object-fit:contain;}
+
+  .full{grid-column: 1 / -1;}
+  .conn-row{display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;}
+  @media (max-width:760px){ .conn-row{grid-template-columns:1fr 1fr;} }
+  .conn-status{
+    display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:14px;
+    padding:10px 12px; border-radius:6px; background:var(--bg); border:1px solid var(--line);
+  }
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--text-dim); flex-shrink:0;}
+  .dot.on{background:var(--ok);}
+  .dot.off{background:var(--danger);}
+  .conn-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  details.advanced{margin-top:6px;}
+  details.advanced summary{
+    cursor:pointer; font-size:12px; color:var(--text-dim); padding:4px 0;
+  }
+  .help-text{font-size:11.5px; color:var(--text-dim); line-height:1.6; margin-top:8px;}
+  .help-text a{color:var(--gold);}
 </style>
 </head>
 <body>
 
 <header>
   <h1>Administrar catálogo — CRUZARTE+</h1>
-  <p>Carga tu <code>productos.js</code> actual, agrega o edita productos con el formulario, y descarga el archivo actualizado para subirlo a tu repositorio. No necesitas tocar código.</p>
+  <p>Conecta el panel una sola vez con tu repositorio de GitHub. Después, cada vez que agregues, edites o borres un producto y le des a guardar, se publica automáticamente en tu web — sin descargar ni subir archivos a mano.</p>
 </header>
 
 <main>
+  <!-- CONEXIÓN CON GITHUB -->
+  <div class="card full" id="gh-card">
+    <h2>Conexión con GitHub</h2>
+
+    <div class="conn-status" id="conn-status">
+      <span class="dot off" id="conn-dot"></span>
+      <span id="conn-text">No conectado todavía. Conecta tu repositorio para publicar automáticamente.</span>
+    </div>
+
+    <div id="conn-form">
+      <div class="conn-row">
+        <div class="field">
+          <label>Usuario u organización</label>
+          <input type="text" id="gh-owner" placeholder="jhonatandelacruzg">
+        </div>
+        <div class="field">
+          <label>Repositorio</label>
+          <input type="text" id="gh-repo" placeholder="cruzarte.mas">
+        </div>
+        <div class="field">
+          <label>Rama</label>
+          <input type="text" id="gh-branch" placeholder="main" value="main">
+        </div>
+        <div class="field">
+          <label>Archivo</label>
+          <input type="text" id="gh-path" placeholder="productos.js" value="productos.js">
+        </div>
+      </div>
+      <div class="field">
+        <label>Token de acceso personal (fine-grained, con permiso de escritura en este repositorio)</label>
+        <input type="text" id="gh-token" placeholder="github_pat_...">
+      </div>
+      <div class="conn-actions">
+        <button class="btn btn-primary" id="btn-connect" style="width:auto;">Conectar y cargar catálogo</button>
+      </div>
+      <details class="advanced">
+        <summary>¿Cómo consigo el token?</summary>
+        <div class="help-text">
+          1. Ve a <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a><br>
+          2. En "Repository access" elige "Only select repositories" y selecciona tu repositorio (cruzarte.mas).<br>
+          3. En "Permissions" → "Repository permissions" busca "Contents" y ponlo en "Read and write".<br>
+          4. Genera el token y cópialo (solo se muestra una vez). Pégalo arriba.<br>
+          5. El token se guarda solo en este navegador (no se envía a nadie más que a GitHub). No lo compartas ni lo escribas en una computadora que no sea tuya.
+        </div>
+      </details>
+    </div>
+
+    <div id="conn-connected" style="display:none;">
+      <div class="conn-actions">
+        <button class="btn btn-ghost btn-sm" id="btn-refresh-gh">Actualizar desde GitHub</button>
+        <button class="btn btn-ghost btn-sm" id="btn-disconnect">Desconectar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- FORMULARIO -->
   <div class="card">
     <h2 id="form-title">Agregar producto</h2>
@@ -270,12 +343,6 @@
 
   <!-- LISTADO -->
   <div class="card">
-    <div class="toolbar">
-      <button class="btn btn-ghost btn-sm" id="btn-load">Cargar productos.js</button>
-      <input type="file" id="file-input" accept=".js,.txt">
-      <button class="btn btn-ghost btn-sm" id="btn-download">Descargar productos.js actualizado</button>
-      <button class="btn btn-ghost btn-sm" id="btn-copy">Copiar código</button>
-    </div>
     <h2>Productos en el catálogo <span class="count-pill" id="count-pill"></span></h2>
     <table id="prod-table" style="display:none;">
       <thead>
@@ -290,8 +357,18 @@
     </table>
     <div class="empty" id="empty-msg">
       Todavía no has cargado ningún catálogo.<br>
-      Haz clic en "Cargar productos.js" y selecciona tu archivo actual, o simplemente empieza a agregar productos nuevos.
+      Conecta tu repositorio de GitHub arriba, o usa las opciones manuales abajo.
     </div>
+
+    <details class="advanced" style="margin-top:16px;">
+      <summary>Opciones manuales (sin conexión a GitHub)</summary>
+      <div class="conn-actions" style="margin-top:10px;">
+        <button class="btn btn-ghost btn-sm" id="btn-load">Cargar productos.js</button>
+        <input type="file" id="file-input" accept=".js,.txt">
+        <button class="btn btn-ghost btn-sm" id="btn-download">Descargar productos.js actualizado</button>
+        <button class="btn btn-ghost btn-sm" id="btn-copy">Copiar código</button>
+      </div>
+    </details>
   </div>
 </main>
 
@@ -305,6 +382,167 @@ const els = {
   precio: $('f-precio'), stock: $('f-stock'), desc: $('f-desc'),
   tag: $('f-tag'), masvendido: $('f-masvendido')
 };
+
+// ============================================================
+// CONEXIÓN CON GITHUB — publicación automática
+// ============================================================
+const GH_STORAGE_KEY = 'cruzarte_gh_config';
+let ghConfig = null; // { owner, repo, branch, path, token }
+let ghSha = null;    // sha del archivo actual en GitHub (necesario para actualizarlo)
+
+function utf8ToBase64(str){
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function base64ToUtf8(str){
+  return decodeURIComponent(escape(atob(str.replace(/\n/g, ''))));
+}
+
+function ghApiHeaders(token){
+  return {
+    'Accept': 'application/vnd.github+json',
+    'Authorization': 'Bearer ' + token,
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+}
+
+function setConnUI(connected){
+  $('conn-dot').className = 'dot ' + (connected ? 'on' : 'off');
+  $('conn-form').style.display = connected ? 'none' : 'block';
+  $('conn-connected').style.display = connected ? 'block' : 'none';
+  if (connected){
+    $('conn-text').textContent = `Conectado a ${ghConfig.owner}/${ghConfig.repo} (rama ${ghConfig.branch}) — los cambios se publican automáticamente.`;
+  } else {
+    $('conn-text').textContent = 'No conectado todavía. Conecta tu repositorio para publicar automáticamente.';
+  }
+}
+
+async function ghFetchFile(cfg){
+  const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(cfg.path)}?ref=${encodeURIComponent(cfg.branch)}`;
+  const res = await fetch(url, { headers: ghApiHeaders(cfg.token) });
+  if (!res.ok){
+    if (res.status === 404) throw new Error('No se encontró el archivo. Revisa el usuario, repositorio, rama y nombre de archivo.');
+    if (res.status === 401 || res.status === 403) throw new Error('El token no es válido o no tiene permiso sobre este repositorio.');
+    throw new Error('GitHub respondió con un error (' + res.status + ').');
+  }
+  const data = await res.json();
+  const text = base64ToUtf8(data.content);
+  return { text, sha: data.sha };
+}
+
+async function ghPutFile(cfg, sha, newText, message){
+  const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(cfg.path)}`;
+  const body = {
+    message: message,
+    content: utf8ToBase64(newText),
+    branch: cfg.branch
+  };
+  if (sha) body.sha = sha;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { ...ghApiHeaders(cfg.token), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok){
+    const errBody = await res.json().catch(() => ({}));
+    if (res.status === 409) throw new Error('El archivo cambió en GitHub desde la última vez que lo cargaste. Dale a "Actualizar desde GitHub" e inténtalo de nuevo.');
+    if (res.status === 401 || res.status === 403) throw new Error('El token no es válido o no tiene permiso de escritura sobre este repositorio.');
+    throw new Error(errBody.message || ('GitHub respondió con un error (' + res.status + ').'));
+  }
+  const data = await res.json();
+  return data.content.sha;
+}
+
+function parseCatalogText(text){
+  const match = text.match(/const\s+productosCatalogo\s*=\s*(\[[\s\S]*?\]);?\s*$/m) ||
+                text.match(/const\s+productosCatalogo\s*=\s*(\[[\s\S]*\])/);
+  if (!match) throw new Error('No se encontró el array productosCatalogo en el archivo.');
+  const parsed = Function('"use strict"; return (' + match[1] + ')')();
+  if (!Array.isArray(parsed)) throw new Error('El contenido no es una lista válida.');
+  return parsed;
+}
+
+async function connectToGithub(cfg){
+  showStatus('Conectando con GitHub…', 'ok');
+  const { text, sha } = await ghFetchFile(cfg);
+  productos = parseCatalogText(text);
+  ghSha = sha;
+  ghConfig = cfg;
+  localStorage.setItem(GH_STORAGE_KEY, JSON.stringify(cfg));
+  setConnUI(true);
+  render();
+  showStatus(`Conectado. Catálogo cargado: ${productos.length} productos.`, 'ok');
+}
+
+$('btn-connect').addEventListener('click', async () => {
+  const cfg = {
+    owner: $('gh-owner').value.trim(),
+    repo: $('gh-repo').value.trim(),
+    branch: ($('gh-branch').value.trim() || 'main'),
+    path: ($('gh-path').value.trim() || 'productos.js'),
+    token: $('gh-token').value.trim()
+  };
+  if (!cfg.owner || !cfg.repo || !cfg.token){
+    showStatus('Completa usuario, repositorio y token.', 'err');
+    return;
+  }
+  try {
+    await connectToGithub(cfg);
+  } catch (err) {
+    showStatus('No se pudo conectar: ' + err.message, 'err');
+  }
+});
+
+$('btn-refresh-gh').addEventListener('click', async () => {
+  try {
+    const { text, sha } = await ghFetchFile(ghConfig);
+    productos = parseCatalogText(text);
+    ghSha = sha;
+    render();
+    showStatus(`Catálogo actualizado desde GitHub: ${productos.length} productos.`, 'ok');
+  } catch (err) {
+    showStatus('No se pudo actualizar: ' + err.message, 'err');
+  }
+});
+
+$('btn-disconnect').addEventListener('click', () => {
+  if (!confirm('¿Desconectar de GitHub? El token guardado en este navegador se borrará.')) return;
+  localStorage.removeItem(GH_STORAGE_KEY);
+  ghConfig = null;
+  ghSha = null;
+  setConnUI(false);
+  showStatus('Desconectado.', 'ok');
+});
+
+async function publishIfConnected(message){
+  if (!ghConfig) return false;
+  showStatus('Publicando en GitHub…', 'ok');
+  const contents = buildFileContents();
+  try {
+    ghSha = await ghPutFile(ghConfig, ghSha, contents, message);
+    showStatus('Publicado ✅ — tu web se actualizará sola en menos de un minuto.', 'ok');
+    return true;
+  } catch (err) {
+    showStatus('Guardado localmente, pero no se pudo publicar: ' + err.message, 'err');
+    return false;
+  }
+}
+
+// Intentar reconectar automáticamente si ya había una conexión guardada
+(async function tryAutoConnect(){
+  const saved = localStorage.getItem(GH_STORAGE_KEY);
+  if (!saved) return;
+  try {
+    const cfg = JSON.parse(saved);
+    $('gh-owner').value = cfg.owner || '';
+    $('gh-repo').value = cfg.repo || '';
+    $('gh-branch').value = cfg.branch || 'main';
+    $('gh-path').value = cfg.path || 'productos.js';
+    $('gh-token').value = cfg.token || '';
+    await connectToGithub(cfg);
+  } catch (err) {
+    showStatus('No se pudo reconectar automáticamente: ' + err.message, 'err');
+  }
+})();
 
 // ---- Manejo de imagen (subir desde escritorio o URL/ruta) ----
 let imgMode = 'upload';
@@ -485,10 +723,14 @@ function deleteProduct(id){
   if (!confirm(`¿Eliminar "${p.nombre}" del catálogo?`)) return;
   productos = productos.filter(x => x.id !== id);
   render();
-  showStatus('Producto eliminado. Recuerda descargar el archivo actualizado.', 'ok');
+  if (ghConfig){
+    publishIfConnected(`Eliminar producto: ${p.nombre}`);
+  } else {
+    showStatus('Producto eliminado. Recuerda descargar el archivo actualizado.', 'ok');
+  }
 }
 
-$('btn-save').addEventListener('click', () => {
+$('btn-save').addEventListener('click', async () => {
   const nombre = els.nombre.value.trim();
   if (!nombre){ showStatus('Ponle un nombre al producto.', 'err'); return; }
   if (!els.precio.value.trim()){ showStatus('Ponle un precio.', 'err'); return; }
@@ -506,16 +748,23 @@ $('btn-save').addEventListener('click', () => {
     img: getImgValue()
   };
 
+  let mensaje;
   if (editingId !== null){
     const idx = productos.findIndex(p => p.id === editingId);
     productos[idx] = { id: editingId, ...data };
-    showStatus('Producto actualizado. Descarga el archivo para publicar el cambio.', 'ok');
+    mensaje = `Editar producto: ${nombre}`;
   } else {
     productos.push({ id: nextId(), ...data });
-    showStatus('Producto agregado. Descarga el archivo para publicarlo.', 'ok');
+    mensaje = `Agregar producto: ${nombre}`;
   }
   clearForm();
   render();
+
+  if (ghConfig){
+    await publishIfConnected(mensaje);
+  } else {
+    showStatus('Guardado localmente. Descarga el archivo para publicarlo.', 'ok');
+  }
 });
 
 $('btn-cancel').addEventListener('click', clearForm);
