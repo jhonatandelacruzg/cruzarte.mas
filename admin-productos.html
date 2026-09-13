@@ -224,7 +224,11 @@
       </div>
       <div class="field">
         <label>Token de acceso personal (fine-grained, con permiso de escritura en este repositorio)</label>
-        <input type="text" id="gh-token" placeholder="github_pat_...">
+        <div style="display:flex; gap:8px;">
+          <input type="password" id="gh-token" placeholder="github_pat_..." style="flex:1;" autocomplete="off">
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-toggle-token" style="flex-shrink:0;">Mostrar</button>
+        </div>
+        <div class="help-text">Este campo se oculta a propósito. Si vas a compartir tu pantalla o tomar una captura, mantenlo oculto.</div>
       </div>
       <div class="conn-actions">
         <button class="btn btn-primary" id="btn-connect" style="width:auto;">Conectar y cargar catálogo</button>
@@ -472,6 +476,13 @@ async function connectToGithub(cfg){
   render();
   showStatus(`Conectado. Catálogo cargado: ${productos.length} productos.`, 'ok');
 }
+
+$('btn-toggle-token').addEventListener('click', () => {
+  const input = $('gh-token');
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  $('btn-toggle-token').textContent = showing ? 'Mostrar' : 'Ocultar';
+});
 
 $('btn-connect').addEventListener('click', async () => {
   const cfg = {
